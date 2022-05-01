@@ -1,0 +1,175 @@
+--------------------------------------------------
+patient-114
+..\..\CT brain\p_114\study_0\series_0: Study: study_0, Series: series_0
+	..\..\CT brain\p_114\study_0\series_0\I0000007_0_0.dcm: 	Normal with confidence 61.46%
+	..\..\CT brain\p_114\study_0\series_0\I0000008_0_0.dcm: 	Tumor with confidence 99.46%
+	..\..\CT brain\p_114\study_0\series_0\I0000009_0_0.dcm: 	Normal with confidence 53.42%
+	..\..\CT brain\p_114\study_0\series_0\I0000010_0_0.dcm: 	Tumor with confidence 93.20%
+	..\..\CT brain\p_114\study_0\series_0\I0000011_0_0.dcm: 	Normal with confidence 59.22%
+	..\..\CT brain\p_114\study_0\series_0\I0000012_0_0.dcm: 	Normal with confidence 92.63%
+	..\..\CT brain\p_114\study_0\series_0\I0000013_0_0.dcm: 	Tumor with confidence 96.28%
+	..\..\CT brain\p_114\study_0\series_0\I0000014_0_0.dcm: 	Normal with confidence 60.73%
+	..\..\CT brain\p_114\study_0\series_0\I0000015_0_0.dcm: 	Tumor with confidence 90.07%
+	..\..\CT brain\p_114\study_0\series_0\I0000016_0_0.dcm: 	Normal with confidence 53.15%
+	..\..\CT brain\p_114\study_0\series_0\I0000017_0_0.dcm: 	Tumor with confidence 99.84%
+	..\..\CT brain\p_114\study_0\series_0\I0000018_0_0.dcm: 	Normal with confidence 60.65%
+	..\..\CT brain\p_114\study_0\series_0\I0000019_0_0.dcm: 	Normal with confidence 65.69%
+	..\..\CT brain\p_114\study_0\series_0\I0000020_0_0.dcm: 	Tumor with confidence 53.97%
+	..\..\CT brain\p_114\study_0\series_0\I0000021_0_0.dcm: 	Normal with confidence 80.04%
+	..\..\CT brain\p_114\study_0\series_0\I0000022_0_0.dcm: 	Normal with confidence 87.39%
+	..\..\CT brain\p_114\study_0\series_0\I0000023_0_0.dcm: 	Normal with confidence 94.22%
+	..\..\CT brain\p_114\study_0\series_0\I0000024_0_0.dcm: 	Normal with confidence 98.01%
+	..\..\CT brain\p_114\study_0\series_0\I0000025_0_0.dcm: 	Normal with confidence 98.10%
+	..\..\CT brain\p_114\study_0\series_0\I0000026_0_0.dcm: 	Normal with confidence 99.62%
+..\..\CT brain\p_114\study_0\series_1: Study: study_0, Series: series_1
+	..\..\CT brain\p_114\study_0\series_1\I0000003_0_0.dcm: 	Normal with confidence 99.81%
+	..\..\CT brain\p_114\study_0\series_1\I0000004_0_0.dcm: 	Normal with confidence 99.90%
+	..\..\CT brain\p_114\study_0\series_1\I0000005_0_0.dcm: 	Normal with confidence 99.94%
+	..\..\CT brain\p_114\study_0\series_1\I0000006_0_0.dcm: 	Normal with confidence 99.95%
+	..\..\CT brain\p_114\study_0\series_1\I0000007_0_0.dcm: 	Normal with confidence 99.91%
+	..\..\CT brain\p_114\study_0\series_1\I0000008_0_0.dcm: 	Normal with confidence 99.91%
+	..\..\CT brain\p_114\study_0\series_1\I0000009_0_0.dcm: 	Normal with confidence 99.94%
+	..\..\CT brain\p_114\study_0\series_1\I0000010_0_0.dcm: 	Normal with confidence 99.89%
+..\..\CT brain\p_114\study_0\series_2: Study: study_0, Series: series_2
+	..\..\CT brain\p_114\study_0\series_2\I0000007_0_0.dcm: 	Tumor with confidence 99.93%
+	..\..\CT brain\p_114\study_0\series_2\I0000008_0_0.dcm: 	Tumor with confidence 100.00%
+	..\..\CT brain\p_114\study_0\series_2\I0000009_0_0.dcm: 	Tumor with confidence 100.00%
+	..\..\CT brain\p_114\study_0\series_2\I0000010_0_0.dcm: 	Tumor with confidence 100.00%
+	..\..\CT brain\p_114\study_0\series_2\I0000011_0_0.dcm: 	Tumor with confidence 99.97%
+	..\..\CT brain\p_114\study_0\series_2\I0000012_0_0.dcm: 	Tumor with confidence 100.00%
+	..\..\CT brain\p_114\study_0\series_2\I0000013_0_0.dcm: 	Tumor with confidence 100.00%
+	..\..\CT brain\p_114\study_0\series_2\I0000014_0_0.dcm: 	Tumor with confidence 100.00%
+	..\..\CT brain\p_114\study_0\series_2\I0000015_0_0.dcm: 	Tumor with confidence 100.00%
+	..\..\CT brain\p_114\study_0\series_2\I0000016_0_0.dcm: 	Tumor with confidence 100.00%
+	..\..\CT brain\p_114\study_0\series_2\I0000017_0_0.dcm: 	Tumor with confidence 100.00%
+	..\..\CT brain\p_114\study_0\series_2\I0000018_0_0.dcm: 	Tumor with confidence 100.00%
+	..\..\CT brain\p_114\study_0\series_2\I0000019_0_0.dcm: 	Tumor with confidence 100.00%
+	..\..\CT brain\p_114\study_0\series_2\I0000020_0_0.dcm: 	Tumor with confidence 100.00%
+	..\..\CT brain\p_114\study_0\series_2\I0000021_0_0.dcm: 	Tumor with confidence 100.00%
+	..\..\CT brain\p_114\study_0\series_2\I0000022_0_0.dcm: 	Tumor with confidence 100.00%
+	..\..\CT brain\p_114\study_0\series_2\I0000023_0_0.dcm: 	Tumor with confidence 100.00%
+	..\..\CT brain\p_114\study_0\series_2\I0000024_0_0.dcm: 	Tumor with confidence 99.99%
+	..\..\CT brain\p_114\study_0\series_2\I0000025_0_0.dcm: 	Tumor with confidence 99.99%
+	..\..\CT brain\p_114\study_0\series_2\I0000026_0_0.dcm: 	Tumor with confidence 98.85%
+..\..\CT brain\p_114\study_0\series_3: Study: study_0, Series: series_3
+	..\..\CT brain\p_114\study_0\series_3\I0000007_0_0.dcm: 	Normal with confidence 99.80%
+	..\..\CT brain\p_114\study_0\series_3\I0000008_0_0.dcm: 	Normal with confidence 99.87%
+	..\..\CT brain\p_114\study_0\series_3\I0000009_0_0.dcm: 	Normal with confidence 99.88%
+	..\..\CT brain\p_114\study_0\series_3\I0000010_0_0.dcm: 	Normal with confidence 99.85%
+	..\..\CT brain\p_114\study_0\series_3\I0000011_0_0.dcm: 	Normal with confidence 99.69%
+	..\..\CT brain\p_114\study_0\series_3\I0000012_0_0.dcm: 	Normal with confidence 99.91%
+	..\..\CT brain\p_114\study_0\series_3\I0000013_0_0.dcm: 	Normal with confidence 99.85%
+	..\..\CT brain\p_114\study_0\series_3\I0000014_0_0.dcm: 	Normal with confidence 99.93%
+	..\..\CT brain\p_114\study_0\series_3\I0000015_0_0.dcm: 	Normal with confidence 99.91%
+	..\..\CT brain\p_114\study_0\series_3\I0000016_0_0.dcm: 	Normal with confidence 99.93%
+	..\..\CT brain\p_114\study_0\series_3\I0000017_0_0.dcm: 	Normal with confidence 99.92%
+	..\..\CT brain\p_114\study_0\series_3\I0000018_0_0.dcm: 	Normal with confidence 99.86%
+	..\..\CT brain\p_114\study_0\series_3\I0000019_0_0.dcm: 	Normal with confidence 99.84%
+	..\..\CT brain\p_114\study_0\series_3\I0000020_0_0.dcm: 	Normal with confidence 99.88%
+	..\..\CT brain\p_114\study_0\series_3\I0000021_0_0.dcm: 	Normal with confidence 99.86%
+	..\..\CT brain\p_114\study_0\series_3\I0000022_0_0.dcm: 	Normal with confidence 99.86%
+	..\..\CT brain\p_114\study_0\series_3\I0000023_0_0.dcm: 	Normal with confidence 99.85%
+	..\..\CT brain\p_114\study_0\series_3\I0000024_0_0.dcm: 	Normal with confidence 99.88%
+	..\..\CT brain\p_114\study_0\series_3\I0000025_0_0.dcm: 	Normal with confidence 99.83%
+	..\..\CT brain\p_114\study_0\series_3\I0000026_0_0.dcm: 	Normal with confidence 99.86%
+--------------------------------------------------
+patient-65
+..\..\CT brain\p_65\study_0\series_0: Study: study_0, Series: series_0
+	..\..\CT brain\p_65\study_0\series_0\I0000007_0_0.dcm: 	Normal with confidence 97.30%
+	..\..\CT brain\p_65\study_0\series_0\I0000008_0_0.dcm: 	Normal with confidence 94.09%
+	..\..\CT brain\p_65\study_0\series_0\I0000009_0_0.dcm: 	Normal with confidence 98.24%
+	..\..\CT brain\p_65\study_0\series_0\I0000010_0_0.dcm: 	Normal with confidence 99.53%
+	..\..\CT brain\p_65\study_0\series_0\I0000011_0_0.dcm: 	Normal with confidence 99.01%
+	..\..\CT brain\p_65\study_0\series_0\I0000012_0_0.dcm: 	Normal with confidence 98.81%
+	..\..\CT brain\p_65\study_0\series_0\I0000013_0_0.dcm: 	Normal with confidence 98.87%
+	..\..\CT brain\p_65\study_0\series_0\I0000014_0_0.dcm: 	Normal with confidence 98.53%
+	..\..\CT brain\p_65\study_0\series_0\I0000015_0_0.dcm: 	Normal with confidence 99.06%
+	..\..\CT brain\p_65\study_0\series_0\I0000016_0_0.dcm: 	Normal with confidence 98.45%
+	..\..\CT brain\p_65\study_0\series_0\I0000017_0_0.dcm: 	Normal with confidence 99.10%
+	..\..\CT brain\p_65\study_0\series_0\I0000018_0_0.dcm: 	Normal with confidence 99.22%
+	..\..\CT brain\p_65\study_0\series_0\I0000019_0_0.dcm: 	Normal with confidence 99.16%
+	..\..\CT brain\p_65\study_0\series_0\I0000020_0_0.dcm: 	Normal with confidence 99.60%
+	..\..\CT brain\p_65\study_0\series_0\I0000021_0_0.dcm: 	Normal with confidence 99.06%
+	..\..\CT brain\p_65\study_0\series_0\I0000022_0_0.dcm: 	Normal with confidence 99.66%
+	..\..\CT brain\p_65\study_0\series_0\I0000023_0_0.dcm: 	Normal with confidence 99.49%
+	..\..\CT brain\p_65\study_0\series_0\I0000024_0_0.dcm: 	Normal with confidence 99.54%
+..\..\CT brain\p_65\study_0\series_1: Study: study_0, Series: series_1
+	..\..\CT brain\p_65\study_0\series_1\I0000006_0_0.dcm: 	not a head!!
+--------------------------------------------------
+patient-409
+..\..\CT brain\p_409\study_0\series_0: Study: study_0, Series: series_0
+	..\..\CT brain\p_409\study_0\series_0\I0000008_0_0.dcm: 	Tumor with confidence 92.50%
+	..\..\CT brain\p_409\study_0\series_0\I0000009_0_0.dcm: 	Tumor with confidence 99.72%
+	..\..\CT brain\p_409\study_0\series_0\I0000010_0_0.dcm: 	Tumor with confidence 99.86%
+	..\..\CT brain\p_409\study_0\series_0\I0000011_0_0.dcm: 	Normal with confidence 52.87%
+	..\..\CT brain\p_409\study_0\series_0\I0000012_0_0.dcm: 	Tumor with confidence 90.97%
+	..\..\CT brain\p_409\study_0\series_0\I0000013_0_0.dcm: 	Tumor with confidence 98.25%
+	..\..\CT brain\p_409\study_0\series_0\I0000014_0_0.dcm: 	Tumor with confidence 97.66%
+	..\..\CT brain\p_409\study_0\series_0\I0000015_0_0.dcm: 	Tumor with confidence 96.76%
+	..\..\CT brain\p_409\study_0\series_0\I0000016_0_0.dcm: 	Tumor with confidence 99.71%
+	..\..\CT brain\p_409\study_0\series_0\I0000017_0_0.dcm: 	Tumor with confidence 99.97%
+	..\..\CT brain\p_409\study_0\series_0\I0000018_0_0.dcm: 	Tumor with confidence 99.97%
+	..\..\CT brain\p_409\study_0\series_0\I0000019_0_0.dcm: 	Tumor with confidence 99.96%
+	..\..\CT brain\p_409\study_0\series_0\I0000020_0_0.dcm: 	Tumor with confidence 99.86%
+	..\..\CT brain\p_409\study_0\series_0\I0000021_0_0.dcm: 	Tumor with confidence 99.99%
+	..\..\CT brain\p_409\study_0\series_0\I0000022_0_0.dcm: 	Tumor with confidence 99.90%
+	..\..\CT brain\p_409\study_0\series_0\I0000023_0_0.dcm: 	Tumor with confidence 99.98%
+	..\..\CT brain\p_409\study_0\series_0\I0000024_0_0.dcm: 	Tumor with confidence 99.75%
+	..\..\CT brain\p_409\study_0\series_0\I0000025_0_0.dcm: 	Tumor with confidence 96.56%
+	..\..\CT brain\p_409\study_0\series_0\I0000026_0_0.dcm: 	Tumor with confidence 99.68%
+	..\..\CT brain\p_409\study_0\series_0\I0000027_0_0.dcm: 	Normal with confidence 68.91%
+	..\..\CT brain\p_409\study_0\series_0\I0000028_0_0.dcm: 	Normal with confidence 94.03%
+	..\..\CT brain\p_409\study_0\series_0\I0000029_0_0.dcm: 	Normal with confidence 97.16%
+	..\..\CT brain\p_409\study_0\series_0\I0000030_0_0.dcm: 	Normal with confidence 97.16%
+..\..\CT brain\p_409\study_2\series_0: Study: study_2, Series: series_0
+	..\..\CT brain\p_409\study_2\series_0\I0000007_0_0.dcm: 	Normal with confidence 87.80%
+	..\..\CT brain\p_409\study_2\series_0\I0000008_0_0.dcm: 	Normal with confidence 78.80%
+	..\..\CT brain\p_409\study_2\series_0\I0000009_0_0.dcm: 	Tumor with confidence 51.27%
+	..\..\CT brain\p_409\study_2\series_0\I0000010_0_0.dcm: 	Normal with confidence 69.44%
+	..\..\CT brain\p_409\study_2\series_0\I0000011_0_0.dcm: 	Tumor with confidence 61.20%
+	..\..\CT brain\p_409\study_2\series_0\I0000012_0_0.dcm: 	Tumor with confidence 87.21%
+	..\..\CT brain\p_409\study_2\series_0\I0000013_0_0.dcm: 	Tumor with confidence 95.70%
+	..\..\CT brain\p_409\study_2\series_0\I0000014_0_0.dcm: 	Tumor with confidence 93.61%
+	..\..\CT brain\p_409\study_2\series_0\I0000015_0_0.dcm: 	Tumor with confidence 97.17%
+	..\..\CT brain\p_409\study_2\series_0\I0000016_0_0.dcm: 	Tumor with confidence 99.91%
+	..\..\CT brain\p_409\study_2\series_0\I0000017_0_0.dcm: 	Tumor with confidence 95.82%
+	..\..\CT brain\p_409\study_2\series_0\I0000018_0_0.dcm: 	Tumor with confidence 98.28%
+	..\..\CT brain\p_409\study_2\series_0\I0000019_0_0.dcm: 	Tumor with confidence 53.14%
+	..\..\CT brain\p_409\study_2\series_0\I0000020_0_0.dcm: 	Normal with confidence 84.04%
+	..\..\CT brain\p_409\study_2\series_0\I0000021_0_0.dcm: 	Tumor with confidence 61.26%
+	..\..\CT brain\p_409\study_2\series_0\I0000022_0_0.dcm: 	Normal with confidence 58.42%
+	..\..\CT brain\p_409\study_2\series_0\I0000023_0_0.dcm: 	Normal with confidence 98.88%
+	..\..\CT brain\p_409\study_2\series_0\I0000024_0_0.dcm: 	Normal with confidence 99.64%
+	..\..\CT brain\p_409\study_2\series_0\I0000025_0_0.dcm: 	Normal with confidence 99.52%
+	..\..\CT brain\p_409\study_2\series_0\I0000026_0_0.dcm: 	Normal with confidence 99.75%
+..\..\CT brain\p_409\study_2\series_1: Study: study_2, Series: series_1
+	..\..\CT brain\p_409\study_2\series_1\I0000003_0_0.dcm: 	Normal with confidence 99.63%
+	..\..\CT brain\p_409\study_2\series_1\I0000004_0_0.dcm: 	Normal with confidence 99.62%
+	..\..\CT brain\p_409\study_2\series_1\I0000005_0_0.dcm: 	Normal with confidence 99.33%
+	..\..\CT brain\p_409\study_2\series_1\I0000006_0_0.dcm: 	Normal with confidence 98.45%
+	..\..\CT brain\p_409\study_2\series_1\I0000007_0_0.dcm: 	Normal with confidence 98.92%
+	..\..\CT brain\p_409\study_2\series_1\I0000008_0_0.dcm: 	Normal with confidence 97.78%
+	..\..\CT brain\p_409\study_2\series_1\I0000009_0_0.dcm: 	Normal with confidence 96.69%
+	..\..\CT brain\p_409\study_2\series_1\I0000010_0_0.dcm: 	Normal with confidence 98.28%
+--------------------------------------------------
+patient-333
+..\..\CT brain\p_333\study_0\series_0: Study: study_0, Series: series_0
+	..\..\CT brain\p_333\study_0\series_0\I0000011_0_0.dcm: 	Normal with confidence 88.23%
+	..\..\CT brain\p_333\study_0\series_0\I0000012_0_0.dcm: 	Tumor with confidence 97.10%
+	..\..\CT brain\p_333\study_0\series_0\I0000013_0_0.dcm: 	Tumor with confidence 91.35%
+	..\..\CT brain\p_333\study_0\series_0\I0000014_0_0.dcm: 	Tumor with confidence 69.75%
+	..\..\CT brain\p_333\study_0\series_0\I0000015_0_0.dcm: 	Tumor with confidence 97.32%
+	..\..\CT brain\p_333\study_0\series_0\I0000016_0_0.dcm: 	Tumor with confidence 81.96%
+	..\..\CT brain\p_333\study_0\series_0\I0000017_0_0.dcm: 	Tumor with confidence 90.90%
+	..\..\CT brain\p_333\study_0\series_0\I0000018_0_0.dcm: 	Tumor with confidence 98.32%
+	..\..\CT brain\p_333\study_0\series_0\I0000019_0_0.dcm: 	Tumor with confidence 97.90%
+	..\..\CT brain\p_333\study_0\series_0\I0000020_0_0.dcm: 	Tumor with confidence 97.72%
+	..\..\CT brain\p_333\study_0\series_0\I0000021_0_0.dcm: 	Tumor with confidence 80.66%
+	..\..\CT brain\p_333\study_0\series_0\I0000022_0_0.dcm: 	Tumor with confidence 95.10%
+	..\..\CT brain\p_333\study_0\series_0\I0000023_0_0.dcm: 	Tumor with confidence 65.07%
+	..\..\CT brain\p_333\study_0\series_0\I0000024_0_0.dcm: 	Tumor with confidence 91.02%
+	..\..\CT brain\p_333\study_0\series_0\I0000025_0_0.dcm: 	Tumor with confidence 57.91%
+	..\..\CT brain\p_333\study_0\series_0\I0000026_0_0.dcm: 	Normal with confidence 79.23%
+	..\..\CT brain\p_333\study_0\series_0\I0000027_0_0.dcm: 	Normal with confidence 94.72%
+	..\..\CT brain\p_333\study_0\series_0\I0000028_0_0.dcm: 	Normal with confidence 95.07%
+	..\..\CT brain\p_333\study_0\series_0\I0000029_0_0.dcm: 	Normal with confidence 98.36%
