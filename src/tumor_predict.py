@@ -88,6 +88,10 @@ def tumor_predict(im=None, image_path='', model_path=None, mode='batch', gpu=Tru
     :param im: an image array with size=512x512, default=None.
     :param image_path: path to brain image in case of im=None, default=''.
     :param model_path: path to pytorch model state, default='models/JUH_noisy_model.pt'
+    :param mode:
+    :param gpu:
+    :param parallel:
+    :param gpu_index:
     :return: a numerical value representing the prediction confidence interval.
     """
     # Load model
@@ -108,7 +112,8 @@ def tumor_predict(im=None, image_path='', model_path=None, mode='batch', gpu=Tru
     predict = model(torch.autograd.Variable(im_norm)).view(-1)
     confs = predict.detach().cpu().numpy() if gpu else predict.detach().numpy()
     for i, conf in enumerate(confs):
-        print(f"slice_{i}: " + "{} with confidence {:.2f}%".format(*('Tumor', conf * 100) if conf > 0.5 else ('Normal', (1 - conf) * 100)))
+        print(f"slice_{i}: " + "{} with confidence {:.2f}%"
+              .format(*('Tumor', conf * 100) if conf > 0.5 else ('Normal', (1 - conf) * 100)))
     return confs
 
 
