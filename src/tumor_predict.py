@@ -6,9 +6,11 @@ Created on Sat Apr 30 18:34:58 2022
 """
 
 import os
+from pathlib import Path
 import torch
 import torch.nn as nn
 from torchvision.models import densenet121
+import numpy as np
 import cv2
 import argparse
 
@@ -50,19 +52,36 @@ class densenet121_change_avg(nn.Module):
         return x
 
 
-def load_model(model_path):
-    os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu_index
+def load_model(model_path, gpu, parallel, gpu_index):
+    os.environ['CUDA_VISIBLE_DEVICES'] = gpu_index
     model = densenet121_change_avg(pretrained=True, class_num=2)
     state = torch.load(model_path)
     model.load_state_dict(state)
-    if args.gpu:
+    if gpu:
         model = model.cuda()
-    if args.parallel:
+    if parallel:
         model = nn.DataParallel(model)
     return model
 
 
-def tumor_predict(im=None, image_path='', model_path='../models/JUH_noisy_model.pt'):
+def standardize(im):
+    im_norm = (im - im.mean()) / im.std()  # Standardize image
+    im_norm = im_norm.transpose(2, 0, 1)  # Move channel first
+    return im_norm
+
+
+def load_batch(im_files):
+    im_list = []
+    for im_file in im_files:
+        im = cv2.imread(str(im_file))
+        # Get image into shape
+        im_norm = standardize(im)
+        im_list.append(im_norm)
+    im_list = np.array(im_list)
+    return im_list
+
+
+def tumor_predict(im=None, image_path='', model_path=None, mode='batch', gpu=True, parallel=False, gpu_index=None):
     """
     Apply tumor model
 
@@ -72,21 +91,25 @@ def tumor_predict(im=None, image_path='', model_path='../models/JUH_noisy_model.
     :return: a numerical value representing the prediction confidence interval.
     """
     # Load model
-    model = load_model(model_path)
+    if model_path is None:
+        model_path = '../models/JUH_noisy_model.pt'
+    model = load_model(model_path, gpu, parallel, gpu_index)
     model.eval()
     # Read image
-    im = cv2.imread(image_path) if im is None else im
-    # Get image into shape
-    im_norm = (im - im.mean()) / im.std()  # Standardize image
-    im_norm = im_norm.transpose(2, 0, 1)  # Move channel first
-    im_norm = torch.FloatTensor(im_norm.reshape(1, *im_norm.shape))  # Convert to tensor
-    if args.gpu:
+    if mode == 'batch':
+        assert hasattr(im, '__len__') or os.path.isdir(image_path), "selecting batch-mode, yet a single file is passed."
+        im_norm = load_batch(list(Path(image_path).glob('*.png'))) if im is None else im
+    else:  # single
+        im_norm = load_batch([image_path]) if im is None else standardize(im).reshape(1, *im.shape[-3:])  # prepare raw image
+    im_norm = torch.FloatTensor(im_norm)  # Convert to tensor
+    if gpu:
         im_norm = im_norm.cuda()
     # Predict
     predict = model(torch.autograd.Variable(im_norm)).view(-1)
-    conf = predict.detach().cpu().numpy()[0] if args.gpu else predict.detach().numpy()[0]
-    print("{} with confidence {:.2f}%".format(*('Tumor', conf * 100) if conf > 0.5 else ('Normal', (1 - conf) * 100)))
-    return conf
+    confs = predict.detach().cpu().numpy() if gpu else predict.detach().numpy()
+    for i, conf in enumerate(confs):
+        print(f"slice_{i}: " + "{} with confidence {:.2f}%".format(*('Tumor', conf * 100) if conf > 0.5 else ('Normal', (1 - conf) * 100)))
+    return confs
 
 
 if __name__ == "__main__":
@@ -97,6 +120,8 @@ if __name__ == "__main__":
                         help='gpu index if you have multiple gpus, default: 0')
     parser.add_argument('--parallel', dest='parallel', default=False, action='store_true',
                         help='use model in parallel mode in case of multiple devices, default: False')
+    parser.add_argument('--mode', dest='mode', type=str, default='single',
+                        help='select whether to get prediction on a single image or batch, default: single')
     parser.add_argument('-m-pth', '--model_path', dest='model_path', type=str,
                         default=os.path.join('..', 'models', 'JUH_noisy_model.pt'),
                         help='select pytorch model path, default: "../models/JUH_noisy_model.pt"')
@@ -104,4 +129,5 @@ if __name__ == "__main__":
                         help='path of image to produce prediction. (required)')
 
     args = parser.parse_args()
-    _ = tumor_predict(image_path=args.image_path, model_path=args.model_path)
+    _ = tumor_predict(image_path=args.image_path, model_path=args.model_path,
+                      mode=args.mode, gpu=args.gpu, parallel=args.parallel, gpu_index=args.gpu_index)

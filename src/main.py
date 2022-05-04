@@ -16,7 +16,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from prepare_dicom import prep_pipeline
 from preprocessing import remove_noise, zoom_on_image, window
-from tumor_predict import tumor_predict
+from tumor_predict import tumor_predict, standardize
 from tqdm import tqdm
 
 
@@ -85,7 +85,7 @@ def data_prep(url, saved=False, image_path=None):
         """
         n_files = len(filenames)
         ignored_portion = n_files//5
-        preds = []
+        images = []
         for j, f in enumerate(filenames[ignored_portion: -ignored_portion]):
             file_name = dirpath / f
             print(f"\t{file_name}: ", end='\t')
@@ -153,7 +153,11 @@ def data_prep(url, saved=False, image_path=None):
             """
             # Convert to rgb image
             image = np.concatenate([image[:, :, np.newaxis], image[:, :, np.newaxis], image[:, :, np.newaxis]], 2)
-            preds.append(tumor_predict(image))
+            # standardize images
+            image = standardize(image)
+            images.append(image)
+        images = np.array(images)
+        preds = tumor_predict(images)
         series_dict[i] = [dirpath, preds]
         i += 1
     return series_dict
