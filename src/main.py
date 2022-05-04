@@ -22,7 +22,7 @@ from tqdm import tqdm
 
 # In['Preprocessing]
 class Logger(object):
-    def __init__(self, log_file="log.txt"):
+    def __init__(self, log_file="../log.txt"):
         self.terminal = sys.stdout
         self.log = open(log_file, "a")
 

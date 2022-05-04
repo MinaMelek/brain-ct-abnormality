@@ -62,7 +62,7 @@ def load_model(model_path):
     return model
 
 
-def tumor_predict(im=None, image_path='', model_path='models/JUH_noisy_model.pt'):
+def tumor_predict(im=None, image_path='', model_path='../models/JUH_noisy_model.pt'):
     """
     Apply tumor model
 
@@ -98,8 +98,8 @@ if __name__ == "__main__":
     parser.add_argument('--parallel', dest='parallel', default=False, action='store_true',
                         help='use model in parallel mode in case of multiple devices, default: False')
     parser.add_argument('-m-pth', '--model_path', dest='model_path', type=str,
-                        default=os.path.join('models', 'JUH_noisy_model.pt'),
-                        help='select pytorch model path, default: "models/JUH_noisy_model.pt"')
+                        default=os.path.join('..', 'models', 'JUH_noisy_model.pt'),
+                        help='select pytorch model path, default: "../models/JUH_noisy_model.pt"')
     parser.add_argument('-i-pth', '--image_path', dest='image_path', type=str, required=True,
                         help='path of image to produce prediction. (required)')
 
