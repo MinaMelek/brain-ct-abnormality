@@ -1,0 +1,7 @@
+Expert Systems Feedback
+Problem,Recommendation
+"488 ops were eligible to use tensor cores but none are using FP16","Try enabling AMP (Automatic Mixed Precision). For more information: https://developer.nvidia.com/automatic-mixed-precision"
+"The GPU is underutilized: Only 0.5% of the profiled time is spent on GPU kernel operations","CPU has the highest (non-GPU) usage at 52.7%. Consider swapping ops that are running on the CPU for equivalent GPU ops"
+"No DALI ops detected","Consider using NVIDIA DALI, a library that is a high performance alternative to built-in data loaders and data iterators. Learn more here: https://developer.nvidia.com/DALI"
+"Unable to split profile into training iterations: key op  not found","Specify key op by setting the --key_op argument"
+"PyTorch NVTX Context Manager was NOT detected.","PyTorch NVTX Context Manager is required to associate GPU performance data to the correct forward and backward propagation phase. Please add torch.autograd.profiler.emit_nvtx() to the training/inference loop. Refer to the DLProf User Guide for more information."
