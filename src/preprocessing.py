@@ -17,16 +17,18 @@ def remove_noise(brain_image, create_mask=False):
     Removes noise from the CT brain image like artifacts, pillow, etc... 
     
     Parameters:
-        brain_image -- a 2d (numpy array) image representing a slice of a brain CT scan.
-        create_mask -- a bool variable for whether to use a threshold-based mask or not (used in specific cases),
-                       default = False.
+        
+        **brain_image** -- a 2d (numpy array) image representing a slice of a brain CT scan.
+        
+        **create_mask** -- a bool variable for whether to use a threshold-based mask or not (used in specific cases),
+        default = False.
     
     Notes:
-      > "morphology.dilation" creates a segmentation of the image
+      * "morphology.dilation" creates a segmentation of the image
         If one pixel is between the origin and the edge of a square of size
         5x5, the pixel belongs to the same class
 
-      > We can instead use a circule using: morphology.disk(2)
+      * We can instead use a circule using: morphology.disk(2)
         In this case the pixel belongs to the same class if it's between the origin
         and the radius
     """
@@ -62,7 +64,7 @@ def crop_image(image):
     Crops the relevant part of the image from the background.
     
     Parameters:
-        image -- a 2d (numpy array) image representing a slice of a brain CT scan (preferable to be denoised)
+        **image** -- a 2d (numpy array) image representing a slice of a brain CT scan (preferable to be de-noised)
     """
     # Create a mask with the background pixels
     mask = image == 0
@@ -92,10 +94,10 @@ def add_pad(image, new_height=512, new_width=512, to_scale=True):
     Pad the image with zeros to fill the new shape.
     
     Parameters:
-        image -- a 2d (numpy array) cropped image.
-        new_height -- the image new height after resize, default: 512.
-        new_width -- the image new width after resize, default: 512.
-        to_scale -- a bool variable; If true, resize the image to fill the new size instead of filling it with zeros. 
+        **image** -- a 2d (numpy array) cropped image.
+        **new_height** -- the image new height after resize, default: 512.
+        **new_width** -- the image new width after resize, default: 512.
+        **to_scale** -- a bool variable; If true, resize the image to fill the new size instead of filling it with zeros. 
                     Center and fill with zeros if not, default: True.
     """
     if to_scale: 
@@ -138,6 +140,36 @@ def window_slice(slice_s, w_level=40, w_width=120, rotate=False, size=None):
     return slice_s
 
 
+def standardize(im):
+    """
+    rescale image to normal distribution
+    
+    :im: original image
+    :return: standardized (normal) image
+    """
+    im_norm = (im - im.mean()) / im.std()  # Standardize image
+    im_norm = im_norm.transpose(2, 0, 1)  # Move channel first
+    return im_norm
+
+
+def load_batch(im_files):
+    """
+    load images from a list of paths
+    
+    :im_files: a list of image paths (a directory files)
+    :return: a list of image arrays
+    """
+    im_list = []
+    for im_file in im_files:
+        im = cv2.imread(str(im_file))
+        # Get image into shape
+        im_norm = standardize(im)
+        im_list.append(im_norm)
+    im_list = np.array(im_list)
+    return im_list
+
+
 def download_data(url):
     print(url)
     pass
+

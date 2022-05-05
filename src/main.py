@@ -17,7 +17,7 @@ import matplotlib.pyplot as plt
 from prepare_dicom import prep_pipeline
 from preprocessing import remove_noise, zoom_on_image, window
 from tumor_predict import tumor_predict, standardize
-from tqdm import tqdm
+# from tqdm import tqdm
 
 
 # In['Preprocessing]

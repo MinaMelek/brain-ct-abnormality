@@ -10,17 +10,17 @@ from pathlib import Path
 import torch
 import torch.nn as nn
 from torchvision.models import densenet121
-import numpy as np
-import cv2
+from preprocessing import load_batch, standardize
 import argparse
 # For benchmarking
-import nvidia_dlprof_pytorch_nvtx
-nvidia_dlprof_pytorch_nvtx.init()
-torch.backends.cudnn.benchmark = True
+if torch.cuda.is_available():
+    import nvidia_dlprof_pytorch_nvtx
+    nvidia_dlprof_pytorch_nvtx.init()
+    torch.backends.cudnn.benchmark = True
 
 
 # define pytorch arch
-class densenet121_change_avg(nn.Module):
+class densenet121_tumor(nn.Module):
     def __init__(self, pretrained=False, class_num=2, seed=0):
         """
         Define the tumor model architecture.
@@ -29,7 +29,7 @@ class densenet121_change_avg(nn.Module):
         :param class_num: an integer representing the number of classes, default=2.
         :param seed: an integer representing the random state of weights initialization, default=0.
         """
-        super(densenet121_change_avg, self).__init__()
+        super(densenet121_tumor, self).__init__()
         self.class_num = class_num
         self.seed = torch.manual_seed(seed)
         self.densenet121 = densenet121(pretrained=pretrained).features
@@ -58,7 +58,7 @@ class densenet121_change_avg(nn.Module):
 
 def load_model(model_path, gpu, parallel, gpu_index):
     os.environ['CUDA_VISIBLE_DEVICES'] = gpu_index
-    model = densenet121_change_avg(pretrained=True, class_num=2)
+    model = densenet121_tumor(pretrained=True, class_num=2)
     state = torch.load(model_path)
     model.load_state_dict(state)
     if gpu:
@@ -68,34 +68,18 @@ def load_model(model_path, gpu, parallel, gpu_index):
     return model
 
 
-def standardize(im):
-    im_norm = (im - im.mean()) / im.std()  # Standardize image
-    im_norm = im_norm.transpose(2, 0, 1)  # Move channel first
-    return im_norm
-
-
-def load_batch(im_files):
-    im_list = []
-    for im_file in im_files:
-        im = cv2.imread(str(im_file))
-        # Get image into shape
-        im_norm = standardize(im)
-        im_list.append(im_norm)
-    im_list = np.array(im_list)
-    return im_list
-
-
 def tumor_predict(im=None, image_path='', model_path=None, mode='batch', gpu=True, parallel=False, gpu_index=None):
     """
     Apply tumor model
 
-    :param im: an image array with size=512x512, default=None.
-    :param image_path: path to brain image in case of im=None, default=''.
+    :param im: an image array (or a list of images if mode='batch') with size=256x256x3, default=None.
+    :param image_path: path to brain image (or a directory of images) in case of im=None, default=''.
     :param model_path: path to pytorch model state, default='models/JUH_noisy_model.pt'
-    :param mode:
-    :param gpu:
-    :param parallel:
-    :param gpu_index:
+    :param mode: a string value represent the input mode whether to be 'single'; an image or a path to an image,
+                 or 'batch'; an array of images or a path to a directory, default='batch'.
+    :param gpu: a bool indicator to whether using gpu or not, default=True.
+    :param parallel: a bool indicator to whether using multiple devices in parallel or not, default=False.
+    :param gpu_index: the used gpu devices indices (can use multiple devices if parallel=True), default='0'.
     :return: a numerical value representing the prediction confidence interval.
     """
     # Load model
@@ -105,10 +89,12 @@ def tumor_predict(im=None, image_path='', model_path=None, mode='batch', gpu=Tru
     model.eval()
     # Read image
     if mode == 'batch':
-        assert hasattr(im, '__len__') or os.path.isdir(image_path), "selecting batch-mode, yet a single file is passed."
+        assert len(im.shape) == 4 or os.path.isdir(image_path), "selecting batch-mode, yet a single file is passed."
         im_norm = load_batch(list(Path(image_path).glob('*.png'))) if im is None else im
     else:  # single
-        im_norm = load_batch([image_path]) if im is None else standardize(im).reshape(1, *im.shape[-3:])  # prepare raw image
+        assert len(im.shape) == 3 or os.path.isfile(image_path), "please, assign argument --mode batch"
+        im_norm = load_batch([image_path]) if im is None \
+            else standardize(im).reshape(1, *im.shape[-3:])  # prepare raw image
     im_norm = torch.FloatTensor(im_norm)  # Convert to tensor
     if gpu:
         im_norm = im_norm.cuda()
