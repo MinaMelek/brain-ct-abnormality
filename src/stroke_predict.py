@@ -13,12 +13,10 @@ from torchvision.models import densenet121
 from preprocessing import load_batch, standardize
 import argparse
 
-# For benchmarking
-if torch.cuda.is_available():
-    import nvidia_dlprof_pytorch_nvtx
-
-    nvidia_dlprof_pytorch_nvtx.init()
-    torch.backends.cudnn.benchmark = True
+# classes definitions
+stroke_classes = ['Intraventricular', 'Intraparenchymal', 'Subarachnoid', 
+                  'Epidural', 'Subdural', 'No_Hemorrhage', 'Fracture_Yes_No']
+class_num = len(stroke_classes)
 
 
 # define pytorch arch
@@ -52,7 +50,7 @@ class densenet121_stroke(nn.Module):
 
 def load_model(model_path, gpu, parallel, gpu_index):
     os.environ['CUDA_VISIBLE_DEVICES'] = gpu_index
-    model = densenet121_stroke(pretrained=True, class_num=7)
+    model = densenet121_stroke(pretrained=True, class_num=class_num)
     if gpu:
         model = model.cuda()
     if parallel:
@@ -84,21 +82,21 @@ def stroke_predict(im=None, image_path='', model_path=None, mode='batch', gpu=Tr
     model.eval()
     # Read image
     if mode == 'batch':
-        assert len(im.shape) == 4 or os.path.isdir(image_path), "selecting batch-mode, yet a single file is passed."
+        assert os.path.isdir(image_path) or len(im.shape) == 4, "selecting batch-mode, yet a single file is passed."
         im_norm = load_batch(list(Path(image_path).glob('*.png'))) if im is None else im
     else:  # single
-        assert len(im.shape) == 3 or os.path.isfile(image_path), "please, assign argument --mode batch"
+        assert os.path.isfile(image_path) or len(im.shape) == 3, "please, assign argument --mode batch"
         im_norm = load_batch([image_path]) if im is None \
             else standardize(im).reshape(1, *im.shape[-3:])  # prepare raw image
     im_norm = torch.FloatTensor(im_norm)  # Convert to tensor
     if gpu:
         im_norm = im_norm.cuda()
     # Predict
-    predict = model(torch.autograd.Variable(im_norm)).sigmoid()
+    predict = model(torch.autograd.Variable(im_norm)).sigmoid()#.argmax(1)
     confs = predict.detach().cpu().numpy() if gpu else predict.detach().numpy()
     for i, conf in enumerate(confs):
-        print(f"slice_{i}: " + "{} with confidence {:.2f}%"
-              .format(*('Tumor', conf * 100) if conf > 0.5 else ('Normal', (1 - conf) * 100)))
+        cls_id = conf.argmax()
+        print(f"slice_{i}: \"{stroke_classes[cls_id]}\" with confidence {conf[cls_id]*100:.2f}%")
     return confs
 
 
@@ -117,7 +115,17 @@ if __name__ == "__main__":
                         help='select pytorch model path, default: "../models/CTish_frac_model.pt"')
     parser.add_argument('-i-pth', '--image_path', dest='image_path', type=str, required=True,
                         help='path of image to produce prediction. (required)')
+    parser.add_argument('-b', dest='benchmark_mode', default=False, action='store_true',
+                        help='indicate a benchmarking mode, default: False')
 
     args = parser.parse_args()
+    
+    # For benchmarking
+    if args.benchmark_mode and torch.cuda.is_available():
+        import nvidia_dlprof_pytorch_nvtx
+
+        nvidia_dlprof_pytorch_nvtx.init()
+        torch.backends.cudnn.benchmark = True
+    
     _ = stroke_predict(image_path=args.image_path, model_path=args.model_path,
                        mode=args.mode, gpu=args.gpu, parallel=args.parallel, gpu_index=args.gpu_index)
