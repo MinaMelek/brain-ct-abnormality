@@ -12,11 +12,6 @@ import torch.nn as nn
 from torchvision.models import densenet121
 from preprocessing import load_batch, standardize
 import argparse
-# For benchmarking
-if torch.cuda.is_available():
-    import nvidia_dlprof_pytorch_nvtx
-    nvidia_dlprof_pytorch_nvtx.init()
-    torch.backends.cudnn.benchmark = True
 
 
 # define pytorch arch
@@ -89,10 +84,10 @@ def tumor_predict(im=None, image_path='', model_path=None, mode='batch', gpu=Tru
     model.eval()
     # Read image
     if mode == 'batch':
-        assert len(im.shape) == 4 or os.path.isdir(image_path), "selecting batch-mode, yet a single file is passed."
+        assert os.path.isdir(image_path) or len(im.shape) == 4, "selecting batch-mode, yet a single file is passed."
         im_norm = load_batch(list(Path(image_path).glob('*.png'))) if im is None else im
     else:  # single
-        assert len(im.shape) == 3 or os.path.isfile(image_path), "please, assign argument --mode batch"
+        assert os.path.isfile(image_path) or len(im.shape) == 3, "please, assign argument --mode batch"
         im_norm = load_batch([image_path]) if im is None \
             else standardize(im).reshape(1, *im.shape[-3:])  # prepare raw image
     im_norm = torch.FloatTensor(im_norm)  # Convert to tensor
@@ -122,7 +117,17 @@ if __name__ == "__main__":
                         help='select pytorch model path, default: "../models/JUH_noisy_model.pt"')
     parser.add_argument('-i-pth', '--image_path', dest='image_path', type=str, required=True,
                         help='path of image to produce prediction. (required)')
+    parser.add_argument('-b', dest='benchmark_mode', default=False, action='store_true',
+                        help='indicate a benchmarking mode, default: False')
 
     args = parser.parse_args()
+
+    # For benchmarking
+    if args.benchmark_mode and torch.cuda.is_available():
+        import nvidia_dlprof_pytorch_nvtx
+
+        nvidia_dlprof_pytorch_nvtx.init()
+        torch.backends.cudnn.benchmark = True
+        
     _ = tumor_predict(image_path=args.image_path, model_path=args.model_path,
                       mode=args.mode, gpu=args.gpu, parallel=args.parallel, gpu_index=args.gpu_index)

@@ -21,12 +21,11 @@ class_num = len(stroke_classes)
 
 # define pytorch arch
 class densenet121_stroke(nn.Module):
-    def __init__(self, pretrained=False, class_num=2, seed=0):
+    def __init__(self, pretrained=False, seed=0):
         """
         Define the stroke model architecture.
 
         :param pretrained: a boolean value for whether to use pretrained weights or not, default=False.
-        :param class_num: an integer representing the number of classes, default=2.
         :param seed: an integer representing the random state of weights initialization, default=0.
         """
         super(densenet121_stroke, self).__init__()
@@ -50,7 +49,7 @@ class densenet121_stroke(nn.Module):
 
 def load_model(model_path, gpu, parallel, gpu_index):
     os.environ['CUDA_VISIBLE_DEVICES'] = gpu_index
-    model = densenet121_stroke(pretrained=True, class_num=class_num)
+    model = densenet121_stroke(pretrained=True)
     if gpu:
         model = model.cuda()
     if parallel:
