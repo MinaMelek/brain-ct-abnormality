@@ -4,12 +4,14 @@ Created on Tue Apr 26 14:24:51 2022
 
 @author: Mina
 """
-
+import os.path
 import numpy as np
+import pydicom
 from skimage.transform import resize  # , rotate
 from skimage import morphology
 from scipy import ndimage
 import cv2
+from prepare_dicom import prep_pipeline
 
 
 def remove_noise(brain_image, create_mask=False):
@@ -120,6 +122,7 @@ def zoom_on_image(image, im_size=(512, 512), zoom=True):
 
 
 def window(slice_s, w_level=40, w_width=120):
+    # Apply brain window
     w_min = w_level - w_width / 2
     w_max = w_level + w_width / 2
     slice_s = (slice_s - w_min)*(255/(w_max-w_min))  # or slice_s = (slice_s - (w_level-(w_width/2)))*(255/(w_width))
@@ -143,7 +146,6 @@ def window_slice(slice_s, w_level=40, w_width=120, rotate=False, size=None):
 def standardize(im):
     """
     rescale image to normal distribution
-    
     :im: original image
     :return: standardized (normal) image
     """
@@ -154,8 +156,7 @@ def standardize(im):
 
 def load_batch(im_files):
     """
-    load images from a list of paths
-    
+    load images (png) from a list of paths
     :im_files: a list of image paths (a directory files)
     :return: a list of image arrays
     """
@@ -169,7 +170,43 @@ def load_batch(im_files):
     return im_list
 
 
-def download_data(url):
-    print(url)
-    pass
+def download_data(path):  # TODO
+    # Placeholder
+    assert os.path.isdir(path), f"{path} is not a directory!"
+    return path
+
+
+def slice_preprocess(file_name, new_size):
+    """
+    Apply all preprocessing steps on image (Dicom slice) before prediction
+    :param file_name: Dicom file name
+    :param new_size: The size of the output image (input shape to model)
+    :return: A preprocessed image ready for prediction
+    """
+    # Read Dicom file.
+    img_dcm = pydicom.dcmread(file_name)
+
+    # Note: Make sure the selected study is for a brain.
+    # Apply window and slope information from Dicom metadata.
+    try:
+        image = prep_pipeline(img=img_dcm)
+    except AttributeError as e:
+        # If Dicom windowing information were unavailable.
+        if 'window' in str(e).split()[-1].lower():
+            print("didn't find window attributes")
+            image = window(img_dcm.pixel_array, w_level=40, w_width=120)
+        else:
+            raise e
+
+    # Remove noise from the CT slice
+    image = remove_noise(image)
+    # Center and zoom into the brain.
+    image = zoom_on_image(image, new_size)
+    # Convert to rgb image
+    image = np.concatenate([image[:, :, np.newaxis], image[:, :, np.newaxis], image[:, :, np.newaxis]], 2)
+    # standardize images
+    image = standardize(image)
+
+    return image
+
 

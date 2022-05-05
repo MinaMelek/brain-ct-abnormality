@@ -128,6 +128,6 @@ if __name__ == "__main__":
 
         nvidia_dlprof_pytorch_nvtx.init()
         torch.backends.cudnn.benchmark = True
-        
+
     _ = tumor_predict(image_path=args.image_path, model_path=args.model_path,
                       mode=args.mode, gpu=args.gpu, parallel=args.parallel, gpu_index=args.gpu_index)

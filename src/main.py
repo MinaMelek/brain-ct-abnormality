@@ -1,26 +1,13 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Tue Apr 26 13:49:06 2022
-
-@author: Mina
-"""
-
-# In['Libraries']
-
 import os
 import sys
 from pathlib import Path
-import tempfile
-import pydicom
 import numpy as np
-import matplotlib.pyplot as plt
-from prepare_dicom import prep_pipeline
-from preprocessing import remove_noise, zoom_on_image, window, standardize
+from preprocessing import slice_preprocess, download_data
 from tumor_predict import tumor_predict
-# from tqdm import tqdm
+from stroke_predict import stroke_predict
+import argparse
 
 
-# In['Preprocessing]
 class Logger(object):
     def __init__(self, log_file="../log.txt"):
         self.terminal = sys.stdout
@@ -41,131 +28,70 @@ class Logger(object):
         self.log.flush()
 
 
-def download_data(url):  # TODO: download actual data
-    """
-    Placeholder
-    
-    1.	Receive the Dicom data URL.
-    2.	Download Dicom data files.
-    """
-    
-    patient_dir = f'../../CT brain/p_{url}'
-    return patient_dir
-
-
-def data_prep(url, saved=False, image_path=None):
-    """
-    3.	Prepare Dicom slices for predictions:
-    """
-    
-    new_size = (256, 256)
-    
-    patient_dir = download_data(url)
-    print('-'*115)
-    print(f"patient-{url}")
+def main(args):
+    patient_dir = download_data(args.url)
     i = 0
-    series_dict = {}
-    for dirpath, dirnames, filenames in os.walk(patient_dir):
+    series = {}
+    for dir_path, dir_names, filenames in os.walk(patient_dir):
         # Filter to Dicom image only.
         filenames = [fi for fi in filenames if fi.endswith(".dcm")]
         # Ignore paths with no dicom files.
-        if len(filenames) == 0 or len(dirnames) > 0:
+        if len(filenames) == 0 or len(dir_names) > 0:
             continue
-        
-        """
-        a.	Determine patient-id/name, study-id and series-id.
-        """
-        dirpath = Path(dirpath)
+        # Determine patient-id/name, study-id and series-id.
+        dir_path = Path(dir_path)
         # TODO: Decide how to use these ids
-        study_id, series_id = dirpath.parts[-2:]
-        print(f"{dirpath}: Study: {study_id}, Series: {series_id}")
-        
-        """
-        b.	Make a decision on which slices should be selected.
-        """
+        study_id, series_id = dir_path.parts[-2:]
+        print(f"{dir_path}: Study: {study_id}, Series: {series_id}")
+        # Only middle slices should be selected
         n_files = len(filenames)
-        ignored_portion = n_files//5
+        ignored_portion = n_files // 5
+        target_files = filenames[ignored_portion: -ignored_portion]
+        # TODO: redesign for efficiency
         images = []
-        for j, f in enumerate(filenames[ignored_portion: -ignored_portion]):
-            file_name = dirpath / f
+        for j, f in enumerate(target_files):
+            file_name = dir_path / f
             print(f"\t{file_name}: ", end='\t')
-            # Read Dicom file.
-            img_dcm = pydicom.dcmread(file_name)
-
-            """
-            c.	Make sure the selected study is for a brain.
-            """
-            try:  # TODO: remove after testing
-                if img_dcm.BodyPartExamined.lower() != 'head':
-                    # print(img_dcm.BodyPartExamined, dirpath)
-                    print('not a head!!')
-                    break
-            except AttributeError:
-                if img_dcm.StudyDescription != 'BRAIN':
-                    try:
-                        if img_dcm.FilterType.lower() == 'body filter' and \
-                                img_dcm.SeriesDescription != 'BRAIN WITHOUT CONTRAST':
-                            # print(img_dcm.FilterType, dirpath)
-                            print('not a head!!')
-                            break
-                    except AttributeError:
-                        # print('######### no filter found', dirpath)
-                        print('not a head!!')
-                        break
-            # print()
-            # continue  # TODO: remove this
-
-            """
-            d.	Apply window and slope information from Dicom metadata.
-            """
-            try:
-                image = prep_pipeline(img=img_dcm)
-            except AttributeError as e:
-                # If Dicom windowing information were unavailable.
-                if 'Window' in str(e).split()[-1]:
-                    print("didn't find window attributes")
-                    image = window(img_dcm.pixel_array, w_level=40, w_width=120)
-                else:
-                    raise e
-
-            """
-            e.	Remove noise from the CT slice 
-            """
-            image = remove_noise(image)
-
-            """
-            f.	Center and zoom into the brain.
-            """
-            image = zoom_on_image(image, new_size)
-
-            """
-            g.	Save data.
-            """
-            if saved:
-                if image_path is None:
-                    image_path = Path(tempfile.mkdtemp())
-                    print(f"saving inside a temp directory: {image_path}")
-                im_path = str(image_path / f'{Path(patient_dir).name}_{i}_{j:03}.png')
-                plt.imsave(im_path, image, cmap='gray')
-
-            """
-            PREDICTION
-            """
-            # Convert to rgb image
-            image = np.concatenate([image[:, :, np.newaxis], image[:, :, np.newaxis], image[:, :, np.newaxis]], 2)
-            # standardize images
-            image = standardize(image)
+            new_size = (args.image_size, args.image_size)
+            # Prepare image (slice) for prediction
+            image = slice_preprocess(file_name, new_size)
             images.append(image)
         images = np.array(images)
-        preds = tumor_predict(images)
-        series_dict[i] = [dirpath, preds]
+        # PREDICTION
+        predict_1 = stroke_predict(images, model_path=os.path.join(args.model_dir, 'CTish_frac_model.pt'))
+        predict_2 = tumor_predict(images, model_path=os.path.join(args.model_dir, 'JUH_noisy_model.pt'))
+        series[i] = [dir_path, predict_1, predict_2]
         i += 1
-    return series_dict
+    return series
 
 
-# In[]
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser.add_argument('-gpu', dest='gpu', default=False, action='store_true',
+                        help='load and predict on gpu, default: False (cpu)')
+    parser.add_argument('-index', dest='gpu_index', type=str, default='0',
+                        help='gpu index if you have multiple gpus, default: 0')
+    parser.add_argument('-parallel', dest='parallel', default=False, action='store_true',
+                        help='use model in parallel mode in case of multiple devices, default: False')
+    parser.add_argument('-m-dir', dest='model_dir', type=str, default=os.path.join('..', 'models'),
+                        help='select pytorch models directory, default: "../models/"')
+    parser.add_argument('-url', dest='url', type=str, required=True,
+                        help='url for patient scans to produce prediction. (required)')
+    parser.add_argument('-size', dest='image_size', type=int, default=256,
+                        help='input images size, default: 256')
+    parser.add_argument('-b', dest='benchmark_mode', default=False, action='store_true',
+                        help='indicate a benchmarking mode, default: False')
+
+    args = parser.parse_args()
+
+    # For benchmarking
+    if args.benchmark_mode:
+        import nvidia_dlprof_pytorch_nvtx
+        import torch
+        nvidia_dlprof_pytorch_nvtx.init()
+        torch.backends.cudnn.benchmark = True
+
     default_stdout = sys.stdout
     sys.stdout = Logger()
-    series_dict = data_prep(333)
+    series_dict = main(args)
     sys.stdout = default_stdout

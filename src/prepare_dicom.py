@@ -87,6 +87,8 @@ def prepare_images_njobs(img_paths, subfolder, n_jobs=-1):
 def prep_pipeline(img_path='', img=None, rescale=False, new_w=None, new_h=None):
     img_dicom = pydicom.read_file(img_path) if img_path else img
     metadata = get_metadata_from_dicom(img_dicom)
+    if metadata['window_width'] > 500:  # width > 500 isn't good for brain tissue
+        raise AttributeError("bad Window")
     img = window_image(img_dicom.pixel_array, **metadata)
     img = normalize_minmax(img) * 255
     if rescale:
