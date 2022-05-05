@@ -60,7 +60,7 @@ def load_model(model_path, gpu, parallel, gpu_index):
     return model
 
 
-def stroke_predict(im=None, image_path='', model_path=None, mode='batch', gpu=True, parallel=True, gpu_index=None):
+def stroke_predict(im=None, image_path='', model_path=None, mode='batch', gpu=True, parallel=True, gpu_index='0'):
     """
     Apply hemorrhage and fracture model
 

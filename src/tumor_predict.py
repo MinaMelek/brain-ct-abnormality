@@ -63,7 +63,7 @@ def load_model(model_path, gpu, parallel, gpu_index):
     return model
 
 
-def tumor_predict(im=None, image_path='', model_path=None, mode='batch', gpu=True, parallel=False, gpu_index=None):
+def tumor_predict(im=None, image_path='', model_path=None, mode='batch', gpu=True, parallel=False, gpu_index='0'):
     """
     Apply tumor model
 
