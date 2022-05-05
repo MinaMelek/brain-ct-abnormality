@@ -97,8 +97,8 @@ def add_pad(image, new_height=512, new_width=512, to_scale=True):
         **image** -- a 2d (numpy array) cropped image.
         **new_height** -- the image new height after resize, default: 512.
         **new_width** -- the image new width after resize, default: 512.
-        **to_scale** -- a bool variable; If true, resize the image to fill the new size instead of filling it with zeros. 
-                    Center and fill with zeros if not, default: True.
+        **to_scale** -- a bool variable; If true, resize the image to fill the new size
+                        instead of filling it with zeros. Center and fill with zeros if not, default: True.
     """
     if to_scale: 
         image = resize_to_scale(image, new_height, new_width)

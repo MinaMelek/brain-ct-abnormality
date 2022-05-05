@@ -25,7 +25,7 @@ if torch.cuda.is_available():
 class densenet121_stroke(nn.Module):
     def __init__(self, pretrained=False, class_num=2, seed=0):
         """
-        Define the tumor model architecture.
+        Define the stroke model architecture.
 
         :param pretrained: a boolean value for whether to use pretrained weights or not, default=False.
         :param class_num: an integer representing the number of classes, default=2.
@@ -37,46 +37,39 @@ class densenet121_stroke(nn.Module):
         self.densenet121 = densenet121(pretrained=pretrained).features
         self.avgpool = nn.AdaptiveAvgPool2d(1)
         self.relu = nn.ReLU()
-        self.dense = nn.Linear(1024, 64)
-        self.norm = nn.BatchNorm1d(64, momentum=0.95, eps=0.005)
-        self.output = nn.Linear(64, class_num if class_num > 2 else 1)
-        self.dropout = nn.Dropout(0.5)
+        self.mlp = nn.Linear(1024, class_num if class_num > 2 else 1)
         self.sigmoid = nn.Sigmoid()
-        self.softmax = nn.Softmax(class_num)
 
     def forward(self, x):
         x = self.densenet121(x)
+        x = self.relu(x)
         x = self.avgpool(x)
         x = x.view(-1, 1024)
-        x = self.dense(x)
-        x = self.norm(x)
-        x = self.relu(x)
-        x = self.dropout(x)
-        x = self.output(x)
-        x = self.sigmoid(x) if self.class_num <= 2 else self.softmax(x)
+        x = self.mlp(x)
 
         return x
 
 
 def load_model(model_path, gpu, parallel, gpu_index):
     os.environ['CUDA_VISIBLE_DEVICES'] = gpu_index
-    model = densenet121_stroke(pretrained=True, class_num=2)
-    state = torch.load(model_path)
-    model.load_state_dict(state)
+    model = densenet121_stroke(pretrained=True, class_num=7)
     if gpu:
         model = model.cuda()
     if parallel:
         model = nn.DataParallel(model)
+    state = torch.load(model_path)
+    model.load_state_dict(state['state_dict'])
+
     return model
 
 
-def tumor_predict(im=None, image_path='', model_path=None, mode='batch', gpu=True, parallel=False, gpu_index=None):
+def stroke_predict(im=None, image_path='', model_path=None, mode='batch', gpu=True, parallel=True, gpu_index=None):
     """
-    Apply tumor model
+    Apply hemorrhage and fracture model
 
     :param im: an image array (or a list of images if mode='batch') with size=256x256x3, default=None.
     :param image_path: path to brain image (or a directory of images) in case of im=None, default=''.
-    :param model_path: path to pytorch model state, default='models/JUH_noisy_model.pt'
+    :param model_path: path to pytorch model state, default='models/CTish_frac_model.pt'
     :param mode: a string value represent the input mode whether to be 'single'; an image or a path to an image,
                  or 'batch'; an array of images or a path to a directory, default='batch'.
     :param gpu: a bool indicator to whether using gpu or not, default=True.
@@ -86,7 +79,7 @@ def tumor_predict(im=None, image_path='', model_path=None, mode='batch', gpu=Tru
     """
     # Load model
     if model_path is None:
-        model_path = '../models/JUH_noisy_model.pt'
+        model_path = '../models/CTish_frac_model.pt'
     model = load_model(model_path, gpu, parallel, gpu_index)
     model.eval()
     # Read image
@@ -101,7 +94,7 @@ def tumor_predict(im=None, image_path='', model_path=None, mode='batch', gpu=Tru
     if gpu:
         im_norm = im_norm.cuda()
     # Predict
-    predict = model(torch.autograd.Variable(im_norm)).view(-1)
+    predict = model(torch.autograd.Variable(im_norm)).sigmoid()
     confs = predict.detach().cpu().numpy() if gpu else predict.detach().numpy()
     for i, conf in enumerate(confs):
         print(f"slice_{i}: " + "{} with confidence {:.2f}%"
@@ -120,11 +113,11 @@ if __name__ == "__main__":
     parser.add_argument('--mode', dest='mode', type=str, default='single',
                         help='select whether to get prediction on a single image or batch, default: single')
     parser.add_argument('-m-pth', '--model_path', dest='model_path', type=str,
-                        default=os.path.join('..', 'models', 'JUH_noisy_model.pt'),
-                        help='select pytorch model path, default: "../models/JUH_noisy_model.pt"')
+                        default=os.path.join('..', 'models', 'CTish_frac_model.pt'),
+                        help='select pytorch model path, default: "../models/CTish_frac_model.pt"')
     parser.add_argument('-i-pth', '--image_path', dest='image_path', type=str, required=True,
                         help='path of image to produce prediction. (required)')
 
     args = parser.parse_args()
-    _ = tumor_predict(image_path=args.image_path, model_path=args.model_path,
-                      mode=args.mode, gpu=args.gpu, parallel=args.parallel, gpu_index=args.gpu_index)
+    _ = stroke_predict(image_path=args.image_path, model_path=args.model_path,
+                       mode=args.mode, gpu=args.gpu, parallel=args.parallel, gpu_index=args.gpu_index)
