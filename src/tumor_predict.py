@@ -13,6 +13,10 @@ from torchvision.models import densenet121
 import numpy as np
 import cv2
 import argparse
+# For benchmarking
+import nvidia_dlprof_pytorch_nvtx
+nvidia_dlprof_pytorch_nvtx.init()
+torch.backends.cudnn.benchmark = True
 
 
 # define pytorch arch
