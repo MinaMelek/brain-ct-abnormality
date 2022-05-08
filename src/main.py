@@ -28,7 +28,7 @@ class Logger(object):
         self.log.flush()
 
 
-def main(args):
+def main():
     patient_dir = download_data(args.url)
     i = 0
     series = {}

@@ -2,12 +2,12 @@ import joblib
 import pydicom
 import numpy as np
 import os
-import cv2
+# import cv2
 from PIL import Image
 from tqdm import tqdm
 import logging
 from glob import glob
-import argparse
+# import argparse
 
 
 def get_first_of_dicom_field_as_int(x):
@@ -95,7 +95,7 @@ def prep_pipeline(img_path='', img=None, rescale=False, new_w=None, new_h=None):
         img = resize(img, new_w, new_h)
         img = img.convert('RGB')
         img = np.array(img, dtype=np.uint8)
-        img = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
+        img = img[:, :, 0]  # RGB to gray: cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
     else:
         pass
 
