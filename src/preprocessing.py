@@ -36,8 +36,6 @@ def remove_noise(brain_image, create_mask=False):
     """
 
     if create_mask:
-        # img = cv2.merge([brain_image, brain_image, brain_image])
-        # mask = cv2.threshold(img, 210, 255, cv2.THRESH_BINARY)[1][:, :, 0]
         mask = brain_image
     else:
         mask = brain_image

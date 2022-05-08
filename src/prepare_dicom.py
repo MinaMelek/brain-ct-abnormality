@@ -94,7 +94,7 @@ def prep_pipeline(img_path='', img=None, rescale=False, new_w=None, new_h=None):
         img = resize(img, new_w, new_h)
         img = img.convert('RGB')
         img = np.array(img, dtype=np.uint8)
-        img = img[:, :, 0]  # RGB to gray: cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
+        img = img[:, :, 0]  # RGB to gray: 
     else:
         pass
 
