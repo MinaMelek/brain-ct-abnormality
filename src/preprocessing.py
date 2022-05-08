@@ -11,7 +11,6 @@ from skimage.transform import resize  # , rotate
 from skimage import morphology
 from skimage.io import imread as sk_imread
 from scipy import ndimage
-# import cv2
 from prepare_dicom import prep_pipeline
 
 

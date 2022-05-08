@@ -2,7 +2,6 @@ import joblib
 import pydicom
 import numpy as np
 import os
-# import cv2
 from PIL import Image
 from tqdm import tqdm
 import logging
