@@ -11,6 +11,7 @@ from skimage.transform import resize  # , rotate
 from skimage import morphology
 from skimage.io import imread as sk_imread
 from scipy import ndimage
+# import cv2
 from prepare_dicom import prep_pipeline
 
 
@@ -36,6 +37,8 @@ def remove_noise(brain_image, create_mask=False):
     """
 
     if create_mask:
+        # img = cv2.merge([brain_image, brain_image, brain_image])
+        # mask = cv2.threshold(img, 210, 255, cv2.THRESH_BINARY)[1][:, :, 0]
         mask = brain_image
     else:
         mask = brain_image

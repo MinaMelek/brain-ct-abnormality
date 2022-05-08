@@ -2,9 +2,10 @@ import os
 import sys
 from pathlib import Path
 import numpy as np
+from torch.utils.data import Dataset, DataLoader
 from preprocessing import slice_preprocess, download_data
-from tumor_predict import tumor_predict
-from stroke_predict import stroke_predict
+from tumor_predict import predict as tumor_predict
+from stroke_predict import predict as stroke_predict, class_num as stroke_classes
 import argparse
 
 
@@ -20,12 +21,30 @@ class Logger(object):
     def write(self, message):
         self.terminal.write(message)
         self.log.write(message)
-        self.terminal.flush()
-        self.log.flush()
+        self.flush()
 
     def flush(self):
         self.terminal.flush()
         self.log.flush()
+
+
+class ImageDataset(Dataset):
+    def __init__(self, target_files, dir_path, size, transform=None):
+        self.target_files = target_files
+        self.dir_path = dir_path
+        self.size = size
+        self.transform = transform
+
+    def __len__(self):
+        return len(self.target_files)
+
+    def __getitem__(self, idx):
+        img_path = self.dir_path / self.target_files[idx]
+        # Prepare image (slice) for prediction
+        image = slice_preprocess(img_path, self.size)
+        if self.transform:
+            image = self.transform(image)
+        return image
 
 
 def main():
@@ -48,19 +67,21 @@ def main():
         ignored_portion = n_files // 5
         target_files = filenames[ignored_portion: -ignored_portion]
         # TODO: redesign for efficiency
-        images = []
-        for j, f in enumerate(target_files):
-            file_name = dir_path / f
-            print(f"\t{file_name}: ", end='\t')
-            new_size = (args.image_size, args.image_size)
-            # Prepare image (slice) for prediction
-            image = slice_preprocess(file_name, new_size)
-            images.append(image)
-        images = np.array(images)
+        new_size = (args.image_size, args.image_size)
+
         # PREDICTION
-        predict_1 = stroke_predict(images, model_path=os.path.join(args.model_dir, 'CTish_frac_model.pt'))
-        predict_2 = tumor_predict(images, model_path=os.path.join(args.model_dir, 'JUH_noisy_model.pt'))
-        series[i] = [dir_path, predict_1, predict_2]
+        test_data = ImageDataset(target_files, dir_path, new_size)
+        batch_size = 64
+        test_dataloader = DataLoader(test_data, batch_size=batch_size, shuffle=False)
+        predict_1 = np.zeros(shape=(len(test_data), stroke_classes))
+        predict_2 = np.zeros(shape=(len(test_data),))
+        for j, images in enumerate(test_dataloader):
+            p_1 = stroke_predict(images, model_path=os.path.join(args.model_dir, 'CTish_frac_model.pt'))
+            p_2 = tumor_predict(images, model_path=os.path.join(args.model_dir, 'JUH_noisy_model.pt'))
+            idx = j*batch_size
+            predict_1[idx: idx+len(images)] = p_1
+            predict_2[idx: idx+len(images)] = p_2
+        series[i] = [dir_path, predict_1, predict_2]  # TODO: format the output
         i += 1
     return series
 
@@ -93,5 +114,5 @@ if __name__ == '__main__':
 
     default_stdout = sys.stdout
     sys.stdout = Logger()
-    series_dict = main(args)
+    series_dict = main()
     sys.stdout = default_stdout

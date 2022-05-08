@@ -63,7 +63,7 @@ def load_model(model_path, gpu, parallel, gpu_index):
     return model
 
 
-def tumor_predict(im=None, image_path='', model_path=None, mode='batch', gpu=True, parallel=False, gpu_index='0'):
+def predict(im=None, image_path='', model_path=None, mode='batch', gpu=True, parallel=False, gpu_index='0'):
     """
     Apply tumor model
 
@@ -94,8 +94,8 @@ def tumor_predict(im=None, image_path='', model_path=None, mode='batch', gpu=Tru
     if gpu:
         im_norm = im_norm.cuda()
     # Predict
-    predict = model(torch.autograd.Variable(im_norm)).view(-1)
-    confs = predict.detach().cpu().numpy() if gpu else predict.detach().numpy()
+    prediction = model(torch.autograd.Variable(im_norm)).view(-1)
+    confs = prediction.detach().cpu().numpy() if gpu else prediction.detach().numpy()
     for i, conf in enumerate(confs):
         print(f"slice_{i}: " + "{} with confidence {:.2f}%"
               .format(*('Tumor', conf * 100) if conf > 0.5 else ('Normal', (1 - conf) * 100)))
@@ -129,5 +129,5 @@ if __name__ == "__main__":
         nvidia_dlprof_pytorch_nvtx.init()
         torch.backends.cudnn.benchmark = True
 
-    _ = tumor_predict(image_path=args.image_path, model_path=args.model_path,
+    _ = predict(image_path=args.image_path, model_path=args.model_path,
                       mode=args.mode, gpu=args.gpu, parallel=args.parallel, gpu_index=args.gpu_index)

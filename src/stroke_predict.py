@@ -60,7 +60,7 @@ def load_model(model_path, gpu, parallel, gpu_index):
     return model
 
 
-def stroke_predict(im=None, image_path='', model_path=None, mode='batch', gpu=True, parallel=True, gpu_index='0'):
+def predict(im=None, image_path='', model_path=None, mode='batch', gpu=True, parallel=True, gpu_index='0'):
     """
     Apply hemorrhage and fracture model
 
@@ -91,8 +91,8 @@ def stroke_predict(im=None, image_path='', model_path=None, mode='batch', gpu=Tr
     if gpu:
         im_norm = im_norm.cuda()
     # Predict
-    predict = model(torch.autograd.Variable(im_norm)).sigmoid()#.argmax(1)
-    confs = predict.detach().cpu().numpy() if gpu else predict.detach().numpy()
+    prediction = model(torch.autograd.Variable(im_norm)).sigmoid()
+    confs = prediction.detach().cpu().numpy() if gpu else prediction.detach().numpy()
     for i, conf in enumerate(confs):
         cls_id = conf.argmax()
         print(f"slice_{i}: \"{stroke_classes[cls_id]}\" with confidence {conf[cls_id]*100:.2f}%")
@@ -126,5 +126,5 @@ if __name__ == "__main__":
         nvidia_dlprof_pytorch_nvtx.init()
         torch.backends.cudnn.benchmark = True
     
-    _ = stroke_predict(image_path=args.image_path, model_path=args.model_path,
+    _ = predict(image_path=args.image_path, model_path=args.model_path,
                        mode=args.mode, gpu=args.gpu, parallel=args.parallel, gpu_index=args.gpu_index)
