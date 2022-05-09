@@ -111,6 +111,7 @@ if __name__ == '__main__':
         import torch
         nvidia_dlprof_pytorch_nvtx.init()
         torch.backends.cudnn.benchmark = True
+        torch.autograd.profiler.emit_nvtx()
 
     default_stdout = sys.stdout
     sys.stdout = Logger()
