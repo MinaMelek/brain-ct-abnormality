@@ -1,0 +1,7 @@
+Expert Systems Feedback
+Problem,Recommendation
+"5103 ops were eligible to use tensor cores but none are using FP16","Try enabling AMP (Automatic Mixed Precision). For more information: https://developer.nvidia.com/automatic-mixed-precision"
+"The following GPU device IDs are not being used: 1 2 3","Make sure to pass the necessary options to docker, the framework, and the model to use all available GPUs"
+"No DALI ops detected","Consider using NVIDIA DALI, a library that is a high performance alternative to built-in data loaders and data iterators. Learn more here: https://developer.nvidia.com/DALI"
+"Unable to split profile into training iterations: key op  not found","Specify key op by setting the --key_op argument"
+"GPU Memory is underutilized: Only 67% of GPU Memory is used","Try incrementally increasing batch size (by multiples of 8) to increase data throughput"
