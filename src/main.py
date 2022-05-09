@@ -70,9 +70,9 @@ def main():
         new_size = (args.image_size, args.image_size)
 
         # PREDICTION
-        test_data = ImageDataset(target_files, dir_path, new_size)
         batch_size = 64
-        test_dataloader = DataLoader(test_data, batch_size=batch_size, shuffle=False)
+        test_data = ImageDataset(target_files, dir_path, new_size)
+        test_dataloader = DataLoader(test_data, batch_size=batch_size, shuffle=False, pin_memory=True, num_workers=26)
         predict_1 = np.zeros(shape=(len(test_data), stroke_classes))
         predict_2 = np.zeros(shape=(len(test_data),))
         for j, images in enumerate(test_dataloader):
