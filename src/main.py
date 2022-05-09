@@ -96,5 +96,5 @@ if __name__ == '__main__':
 
     default_stdout = sys.stdout
     sys.stdout = Logger()
-    series_dict = main(args)
+    series_dict = main()
     sys.stdout = default_stdout
