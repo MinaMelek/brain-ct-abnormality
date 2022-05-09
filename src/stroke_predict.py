@@ -60,7 +60,7 @@ def load_model(model_path, gpu, parallel, gpu_index):
     return model
 
 
-def predict(im=None, image_path='', model_path=None, mode=None, gpu=True, parallel=True, gpu_index='0'):
+def predict(im=None, image_path='', model_path=None, mode='batch', gpu=True, parallel=True, gpu_index='0'):
     """
     Apply hemorrhage and fracture model
 
@@ -68,7 +68,7 @@ def predict(im=None, image_path='', model_path=None, mode=None, gpu=True, parall
     :param image_path: path to brain image (or a directory of images) in case of im=None, default=''.
     :param model_path: path to pytorch model state, default='models/CTish_frac_model.pt'
     :param mode: a string value represent the input mode whether to be 'single'; an image or a path to an image,
-                 or 'batch'; an array of images or a path to a directory, default=None.
+                 or 'batch'; an array of images or a path to a directory, default='batch'.
     :param gpu: a bool indicator to whether using gpu or not, default=True.
     :param parallel: a bool indicator to whether using multiple devices in parallel or not, default=False.
     :param gpu_index: the used gpu devices indices (can use multiple devices if parallel=True), default='0'.
@@ -79,25 +79,19 @@ def predict(im=None, image_path='', model_path=None, mode=None, gpu=True, parall
         model_path = '../models/CTish_frac_model.pt'
     model = load_model(model_path, gpu, parallel, gpu_index)
     model.eval()
-
     # Read image
     if mode == 'batch':
         assert os.path.isdir(image_path) or len(im.shape) == 4, "selecting batch-mode, yet a single file is passed."
-        im = load_batch(list(Path(image_path).glob('*.png'))) if im is None else im
-        im = torch.Tensor(im)  # Convert to tensor
-    elif mode == 'single':
+        im_norm = load_batch(list(Path(image_path).glob('*.png'))) if im is None else im
+    else:  # single
         assert os.path.isfile(image_path) or len(im.shape) == 3, "please, assign argument --mode batch"
-        im = load_batch([image_path]) if im is None \
+        im_norm = load_batch([image_path]) if im is None \
             else standardize(im).reshape(1, *im.shape[-3:])  # prepare raw image
-        im = torch.Tensor(im)  # Convert to tensor
-    else:
-        pass  # mode is None in case of called from main
-
+    im_norm = torch.Tensor(im_norm)  # Convert to tensor
     if gpu:
-        im = im.cuda()
-
+        im_norm = im_norm.cuda()
     # Predict
-    prediction = model(torch.autograd.Variable(im)).sigmoid()
+    prediction = model(torch.autograd.Variable(im_norm)).sigmoid()
     confs = prediction.detach().cpu().numpy() if gpu else prediction.detach().numpy()
     for i, conf in enumerate(confs):
         cls_id = conf.argmax()
