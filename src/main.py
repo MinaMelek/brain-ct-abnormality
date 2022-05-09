@@ -48,18 +48,20 @@ def main():
         ignored_portion = n_files // 5
         target_files = filenames[ignored_portion: -ignored_portion]
         # TODO: redesign for efficiency
-        images = []
+        # images = []
+        predict_1 = []
+        predict_2 = []
         for j, f in enumerate(target_files):
             file_name = dir_path / f
             print(f"\t{file_name}: ", end='\t')
             new_size = (args.image_size, args.image_size)
             # Prepare image (slice) for prediction
             image = slice_preprocess(file_name, new_size)
-            images.append(image)
-        images = np.array(images)
-        # PREDICTION
-        predict_1 = stroke_predict(images, model_path=os.path.join(args.model_dir, 'CTish_frac_model.pt'))
-        predict_2 = tumor_predict(images, model_path=os.path.join(args.model_dir, 'JUH_noisy_model.pt'))
+            # images.append(image)
+            # images = np.array(images)
+            # PREDICTION
+            predict_1.append(stroke_predict(image, mode='single', model_path=os.path.join(args.model_dir, 'CTish_frac_model.pt')))
+            predict_2.append(tumor_predict(image, mode='single', model_path=os.path.join(args.model_dir, 'JUH_noisy_model.pt')))
         series[i] = [dir_path, predict_1, predict_2]
         i += 1
     return series
@@ -90,6 +92,7 @@ if __name__ == '__main__':
         import torch
         nvidia_dlprof_pytorch_nvtx.init()
         torch.backends.cudnn.benchmark = True
+        torch.autograd.profiler.emit_nvtx()
 
     default_stdout = sys.stdout
     sys.stdout = Logger()

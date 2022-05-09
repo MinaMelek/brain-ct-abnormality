@@ -89,7 +89,7 @@ def tumor_predict(im=None, image_path='', model_path=None, mode='batch', gpu=Tru
     else:  # single
         assert os.path.isfile(image_path) or len(im.shape) == 3, "please, assign argument --mode batch"
         im_norm = load_batch([image_path]) if im is None \
-            else standardize(im).reshape(1, *im.shape[-3:])  # prepare raw image
+            else im.reshape(1, *im.shape[-3:])  # prepare raw image
     im_norm = torch.FloatTensor(im_norm)  # Convert to tensor
     if gpu:
         im_norm = im_norm.cuda()
