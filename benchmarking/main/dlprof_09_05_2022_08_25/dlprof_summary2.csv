@@ -1,45 +1,45 @@
-System Config
-GPU Count,4
+System Config,,,,
+GPU Count,4,,,
 GPU Name(s),NVIDIA RTX A5000, NVIDIA RTX A5000, NVIDIA RTX A5000, NVIDIA RTX A5000
-CPU Model,AMD EPYC 7402 24-Core Processor
-GPU Driver Version,470.57.02
-Framework,PyTorch 1.10.0a0+3fd9dcf
-CUDA Version,11.4
-cuDNN Version,8.2.2
-NSys Version,2021.3.2.12-9700a21
-DLProf Version,v1.8.0
-DLProf Build,29839685
-
-Summary Report
-Wall Clock Time (ns),25304021351
-Tensor Core Kernel Utilization %,1.3
-GPU Utilization %,0.6
-Tensor Core Kernel Duration %,0.0
-Non-Tensor Core Kernel Duration %,0.6
-Memory Duration %,0.0
-Dataloader Duration %,3.5
-IO Duration %,0.0
-CPU Duration %,39.4
-Other Duration %,56.5
-
-Iterations
-Total Iterations,1
-Aggregated Iterations,1
-Start Iteration,0
-Stop Iteration,0
-Average Iteration Time (ns),25304021351.0
-Iteration Time Standard Deviation,0.0
-
-All Ops
-,GPU Time (ns),CPU Time (ns),# Ops
-All ops,632428217,39154712710,10272
-Ops using TC,362728387,2259147248,274
-Ops eligible for TC but not using,214119297,27235257679,332
-All other ops,55580533,9660307783,9666
-
-All Kernels
-,GPU Time (ns),CPU Time (ns),# Kernels
-All kernels,752346822,176373637,54
-Kernels using TC,9046679,2566028,2
-Memory,15182852,44395868,3
-All other kernels,728117291,129411741,49
+CPU Model,AMD EPYC 7402 24-Core Processor,,,
+GPU Driver Version,470.57.02,,,
+Framework,PyTorch 1.10.0a0+3fd9dcf,,,
+CUDA Version,11.4,,,
+cuDNN Version,8.2.2,,,
+NSys Version,2021.3.2.12-9700a21,,,
+DLProf Version,v1.8.0,,,
+DLProf Build,29839685,,,
+,,,,
+Summary Report,,,,
+Wall Clock Time (ns),25304021351,,,
+Tensor Core Kernel Utilization %,1.3,,,
+GPU Utilization %,0.6,,,
+Tensor Core Kernel Duration %,0,,,
+Non-Tensor Core Kernel Duration %,0.6,,,
+Memory Duration %,0,,,
+Dataloader Duration %,3.5,,,
+IO Duration %,0,,,
+CPU Duration %,39.4,,,
+Other Duration %,56.5,,,
+,,,,
+Iterations,,,,
+Total Iterations,1,,,
+Aggregated Iterations,1,,,
+Start Iteration,0,,,
+Stop Iteration,0,,,
+Average Iteration Time (ns),25304021351,,,
+Iteration Time Standard Deviation,0,,,
+,,,,
+All Ops,,,,
+,GPU Time (ns),CPU Time (ns),# Ops,
+All ops,632428217,39154712710,10272,
+Ops using TC,362728387,2259147248,274,
+Ops eligible for TC but not using,214119297,27235257679,332,
+All other ops,55580533,9660307783,9666,
+,,,,
+All Kernels,,,,
+,GPU Time (ns),CPU Time (ns),# Kernels,
+All kernels,752346822,176373637,54,
+Kernels using TC,9046679,2566028,2,
+Memory,15182852,44395868,3,
+All other kernels,728117291,129411741,49,
