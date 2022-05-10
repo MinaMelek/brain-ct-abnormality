@@ -10,6 +10,7 @@ from pathlib import Path
 import torch
 import torch.nn as nn
 from torchvision.models import densenet121
+import torch_tensorrt
 from preprocessing import load_batch, standardize
 import argparse
 
@@ -81,7 +82,7 @@ def predict(im=None, image_path='', model_path=None, mode=None, gpu=True, parall
     if model_path is None:
         model_path = '../models/JUH_noisy_model.pt'
     model = load_model(model_path, gpu, parallel, gpu_index)
-    model.eval()
+    # model.eval()
 
     # Read image
     if mode == 'batch':
@@ -100,7 +101,11 @@ def predict(im=None, image_path='', model_path=None, mode=None, gpu=True, parall
         im = im.cuda()
 
     # Predict
-    prediction = model(torch.autograd.Variable(im.float())).view(-1)
+    trt_model = torch_tensorrt.compile(model,
+                                       inputs=[torch_tensorrt.Input(im.shape)],
+                                       enabled_precisions={torch_tensorrt.dtype.half}  # Run with FP16
+                                       )
+    prediction = trt_model(torch.autograd.Variable(im.float())).view(-1)
     confs = prediction.detach().cpu().numpy() if gpu else prediction.detach().numpy()
     for i, conf in enumerate(confs):
         print(f"slice_{i}: " + "{} with confidence {:.2f}%"
