@@ -52,15 +52,11 @@ class densenet121_tumor(nn.Module):
         return x
 
 
-def load_model(model_path, gpu, parallel, gpu_index):
+def load_model(model_path, gpu_index):
     os.environ['CUDA_VISIBLE_DEVICES'] = gpu_index
     model = densenet121_tumor(pretrained=True, class_num=2)
     state = torch.load(model_path)
     model.load_state_dict(state)
-    if gpu:
-        model = model.cuda()
-    if parallel:
-        model = nn.DataParallel(model)
     return model
 
 
@@ -81,25 +77,27 @@ def predict(im=None, image_path='', model_path=None, mode=None, gpu=True, parall
     # Load model
     if model_path is None:
         model_path = '../models/JUH_noisy_model.pt'
-    model = load_model(model_path, gpu, parallel, gpu_index)
+    model = load_model(model_path, gpu_index)
     # model.eval()
 
     # Read image
     if mode == 'batch':
         assert os.path.isdir(image_path) or len(im.shape) == 4, "selecting batch-mode, yet a single file is passed."
         im = load_batch(list(Path(image_path).glob('*.png'))) if im is None else im
-        im = torch.Tensor(im)  # Convert to tensor
+        im = torch.FloatTensor(im)  # Convert to tensor
     elif mode == 'single':
         assert os.path.isfile(image_path) or len(im.shape) == 3, "please, assign argument --mode batch"
         im = load_batch([image_path]) if im is None \
             else standardize(im).reshape(1, *im.shape[-3:])  # prepare raw image
-        im = torch.Tensor(im)  # Convert to tensor
+        im = torch.FloatTensor(im)  # Convert to tensor
     else:
         pass  # mode is None in case of called from main
 
     if gpu:
+        model = model.cuda()
         im = im.cuda()
-
+    if parallel:
+        model = nn.DataParallel(model)
     # Predict
     trt_model = torch_tensorrt.compile(model,
                                        inputs=[torch_tensorrt.Input(im.shape)],

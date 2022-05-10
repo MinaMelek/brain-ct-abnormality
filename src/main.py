@@ -76,7 +76,7 @@ def main():
         predict_1 = np.zeros(shape=(len(test_data), stroke_classes))
         predict_2 = np.zeros(shape=(len(test_data),))
         for j, images in enumerate(test_dataloader):
-            p_1 = stroke_predict(images, model_path=os.path.join(args.model_dir, 'CTish_frac_model.pt'))
+            p_1 = stroke_predict(images, model_path=os.path.join(args.model_dir, 'CTish_frac_model.pt'), parallel=True)
             p_2 = tumor_predict(images, model_path=os.path.join(args.model_dir, 'JUH_noisy_model.pt'))
             idx = j*batch_size
             predict_1[idx: idx+len(images)] = p_1
