@@ -4,7 +4,7 @@ from pathlib import Path
 import numpy as np
 from torch.utils.data import Dataset, DataLoader
 from preprocessing import slice_preprocess, download_data
-from tumor_predict import predict as tumor_predict
+from tumor_predict import load_model, predict as tumor_predict
 from stroke_predict import predict as stroke_predict, class_num as stroke_classes
 import argparse
 
@@ -73,11 +73,12 @@ def main():
         batch_size = 64
         test_data = ImageDataset(target_files, dir_path, new_size)
         test_dataloader = DataLoader(test_data, batch_size=batch_size, shuffle=False, pin_memory=True, num_workers=26)
+        tumor_model = load_model(os.path.join(args.model_dir, 'JUH_noisy_model.pt'))  # preload to remove overhead
         predict_1 = np.zeros(shape=(len(test_data), stroke_classes))
         predict_2 = np.zeros(shape=(len(test_data),))
         for j, images in enumerate(test_dataloader):
             p_1 = stroke_predict(images, model_path=os.path.join(args.model_dir, 'CTish_frac_model.pt'), parallel=True)
-            p_2 = tumor_predict(images, model_path=os.path.join(args.model_dir, 'JUH_noisy_model.pt'))
+            p_2 = tumor_predict(images, tumor_model)  # TODO: remake for stroke, use args for inputs
             idx = j*batch_size
             predict_1[idx: idx+len(images)] = p_1
             predict_2[idx: idx+len(images)] = p_2
@@ -90,8 +91,8 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('-gpu', dest='gpu', default=False, action='store_true',
                         help='load and predict on gpu, default: False (cpu)')
-    parser.add_argument('-index', dest='gpu_index', type=str, default='0',
-                        help='gpu index if you have multiple gpus, default: 0')
+    parser.add_argument('-index', dest='gpu_index', type=str, default=None,
+                        help='gpu index if you have multiple gpus, default: None')
     parser.add_argument('-parallel', dest='parallel', default=False, action='store_true',
                         help='use model in parallel mode in case of multiple devices, default: False')
     parser.add_argument('-m-dir', dest='model_dir', type=str, default=os.path.join('..', 'models'),

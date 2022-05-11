@@ -30,9 +30,9 @@ class densenet121_tumor(nn.Module):
         self.seed = torch.manual_seed(seed)
         self.densenet121 = densenet121(pretrained=pretrained).features
         self.avgpool = nn.AdaptiveAvgPool2d(1)
-        self.relu = nn.ReLU()
         self.dense = nn.Linear(1024, 64)
-        self.norm = nn.BatchNorm1d(64, momentum=0.95, eps=0.005)
+        self.norm = nn.BatchNorm1d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        self.relu = nn.ReLU()
         self.output = nn.Linear(64, class_num if class_num > 2 else 1)
         self.dropout = nn.Dropout(0.5)
         self.sigmoid = nn.Sigmoid()
@@ -43,7 +43,7 @@ class densenet121_tumor(nn.Module):
         x = self.avgpool(x)
         x = x.view(-1, 1024)
         x = self.dense(x)
-        x = self.norm(x)
+        # x = self.norm(x)
         x = self.relu(x)
         x = self.dropout(x)
         x = self.output(x)
@@ -52,15 +52,42 @@ class densenet121_tumor(nn.Module):
         return x
 
 
-def load_model(model_path, gpu_index):
-    os.environ['CUDA_VISIBLE_DEVICES'] = gpu_index
+def load_model(model_path, gpu=True, parallel=False, gpu_index=None, tensorRT=False):
+    # TODO: structure the same model for stroke and use the same script for both
+    if gpu_index:
+        os.environ['CUDA_VISIBLE_DEVICES'] = gpu_index
     model = densenet121_tumor(pretrained=True, class_num=2)
     state = torch.load(model_path)
     model.load_state_dict(state)
+
+    model.eval()
+    if gpu:
+        model = model.cuda()
+    if parallel:
+        model = nn.DataParallel(model)
+    if tensorRT:  # TODO: fix
+        model = torch_tensorrt.compile(model,
+                                       inputs=[torch_tensorrt.Input(tuple(im.shape))],
+                                       enabled_precisions={torch_tensorrt.dtype.half}  # Run with FP16
+                                       )
+    
     return model
 
 
-def predict(im=None, image_path='', model_path=None, mode=None, gpu=True, parallel=False, gpu_index='0'):
+def predict(input, model, gpu=True):
+    # prediction process
+    if gpu:
+        input = input.cuda()
+    prediction = model(torch.autograd.Variable(input.float())).view(-1)
+    confs = prediction.detach().cpu().numpy() if gpu else prediction.detach().numpy()
+    for i, conf in enumerate(confs):
+        print(f"slice_{i}: " + "{} with confidence {:.2f}%"
+              .format(*('Tumor', conf * 100) if conf > 0.5 else ('Normal', (1 - conf) * 100)))
+        
+    return confs
+
+
+def main(im=None, image_path='', model_path=None, mode=None, gpu=True, parallel=False, gpu_index=None):
     """
     Apply tumor model
 
@@ -71,14 +98,15 @@ def predict(im=None, image_path='', model_path=None, mode=None, gpu=True, parall
                  or 'batch'; an array of images or a path to a directory, default=None.
     :param gpu: a bool indicator to whether using gpu or not, default=True.
     :param parallel: a bool indicator to whether using multiple devices in parallel or not, default=False.
-    :param gpu_index: the used gpu devices indices (can use multiple devices if parallel=True), default='0'.
+    :param gpu_index: the used gpu devices indices (can use multiple devices if parallel=True),
+                      for example; gpu_index='0' lets you use device:0, so as gpu_index='1,2', default='0'(None).
     :return: a numerical value representing the prediction confidence interval.
     """
     # Load model
+    torch.hub._validate_not_a_forked_repo=lambda a,b,c: True
     if model_path is None:
         model_path = '../models/JUH_noisy_model.pt'
-    model = load_model(model_path, gpu_index)
-    # model.eval()
+    model = load_model(model_path, gpu, parallel, gpu_index)
 
     # Read image
     if mode == 'batch':
@@ -91,23 +119,10 @@ def predict(im=None, image_path='', model_path=None, mode=None, gpu=True, parall
             else standardize(im).reshape(1, *im.shape[-3:])  # prepare raw image
         im = torch.FloatTensor(im)  # Convert to tensor
     else:
-        pass  # mode is None in case of called from main
+        pass  # mode is None in case of called from main ## depricated
 
-    if gpu:
-        model = model.cuda()
-        im = im.cuda()
-    if parallel:
-        model = nn.DataParallel(model)
     # Predict
-    trt_model = torch_tensorrt.compile(model,
-                                       inputs=[torch_tensorrt.Input(im.shape)],
-                                       enabled_precisions={torch_tensorrt.dtype.half}  # Run with FP16
-                                       )
-    prediction = trt_model(torch.autograd.Variable(im.float())).view(-1)
-    confs = prediction.detach().cpu().numpy() if gpu else prediction.detach().numpy()
-    for i, conf in enumerate(confs):
-        print(f"slice_{i}: " + "{} with confidence {:.2f}%"
-              .format(*('Tumor', conf * 100) if conf > 0.5 else ('Normal', (1 - conf) * 100)))
+    confs = predict(im, model)
     return confs
 
 
@@ -140,3 +155,5 @@ if __name__ == "__main__":
 
     _ = predict(image_path=args.image_path, model_path=args.model_path,
                       mode=args.mode, gpu=args.gpu, parallel=args.parallel, gpu_index=args.gpu_index)
+
+

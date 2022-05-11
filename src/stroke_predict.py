@@ -48,7 +48,8 @@ class densenet121_stroke(nn.Module):
 
 
 def load_model(model_path, gpu, parallel, gpu_index):
-    os.environ['CUDA_VISIBLE_DEVICES'] = gpu_index
+    if gpu_index:
+        os.environ['CUDA_VISIBLE_DEVICES'] = gpu_index
     model = densenet121_stroke(pretrained=True)
     if gpu:
         model = model.cuda()
@@ -60,7 +61,7 @@ def load_model(model_path, gpu, parallel, gpu_index):
     return model
 
 
-def predict(im=None, image_path='', model_path=None, mode=None, gpu=True, parallel=True, gpu_index='0'):
+def predict(im=None, image_path='', model_path=None, mode=None, gpu=True, parallel=True, gpu_index=None):
     """
     Apply hemorrhage and fracture model
 
@@ -71,7 +72,8 @@ def predict(im=None, image_path='', model_path=None, mode=None, gpu=True, parall
                  or 'batch'; an array of images or a path to a directory, default=None.
     :param gpu: a bool indicator to whether using gpu or not, default=True.
     :param parallel: a bool indicator to whether using multiple devices in parallel or not, default=False.
-    :param gpu_index: the used gpu devices indices (can use multiple devices if parallel=True), default='0'.
+    :param gpu_index: the used gpu devices indices (can use multiple devices if parallel=True),
+                      for example; gpu_index='0' lets you use device:0, so as gpu_index='1,2', default='0'(None).
     :return: a numerical value representing the prediction confidence interval.
     """
     # Load model
