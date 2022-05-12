@@ -10,7 +10,6 @@ from pathlib import Path
 import torch
 import torch.nn as nn
 from torchvision.models import densenet121
-import torch_tensorrt
 from preprocessing import load_batch, standardize
 import argparse
 
@@ -52,7 +51,7 @@ class densenet121_tumor(nn.Module):
         return x
 
 
-def load_model(model_path, im_shape, gpu=True, parallel=False, gpu_index=None, tensorRT=False):
+def load_model(model_path, gpu=True, parallel=False, gpu_index=None):
     # TODO: structure the same model for stroke and use the same script for both
     if gpu_index:
         os.environ['CUDA_VISIBLE_DEVICES'] = gpu_index
@@ -65,12 +64,7 @@ def load_model(model_path, im_shape, gpu=True, parallel=False, gpu_index=None, t
         model = model.cuda()
     if parallel:
         model = nn.DataParallel(model)
-    if tensorRT:  # TODO: fix
-        model = torch_tensorrt.compile(model,
-                                       inputs=[torch_tensorrt.Input(tuple(im_shape))],
-                                       enabled_precisions={torch_tensorrt.dtype.half}  # Run with FP16
-                                       )
-    
+
     return model
 
 
@@ -118,7 +112,7 @@ def main(im=None, image_path='', model_path=None, mode=None, gpu=True, parallel=
     # Load model
     if model_path is None:
         model_path = '../models/JUH_noisy_model.pt'
-    model = load_model(model_path, im.shape, gpu, parallel, gpu_index)
+    model = load_model(model_path, gpu, parallel, gpu_index)
 
     # Predict
     confs = predict(im, model)
