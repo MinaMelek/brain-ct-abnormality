@@ -52,7 +52,7 @@ class densenet121_tumor(nn.Module):
         return x
 
 
-def load_model(model_path, gpu=True, parallel=False, gpu_index=None, tensorRT=False):
+def load_model(model_path, im_shape, gpu=True, parallel=False, gpu_index=None, tensorRT=False):
     # TODO: structure the same model for stroke and use the same script for both
     if gpu_index:
         os.environ['CUDA_VISIBLE_DEVICES'] = gpu_index
@@ -67,18 +67,18 @@ def load_model(model_path, gpu=True, parallel=False, gpu_index=None, tensorRT=Fa
         model = nn.DataParallel(model)
     if tensorRT:  # TODO: fix
         model = torch_tensorrt.compile(model,
-                                       inputs=[torch_tensorrt.Input(tuple(im.shape))],
+                                       inputs=[torch_tensorrt.Input(tuple(im_shape))],
                                        enabled_precisions={torch_tensorrt.dtype.half}  # Run with FP16
                                        )
     
     return model
 
 
-def predict(input, model, gpu=True):
+def predict(input_batch: torch.float64, model, gpu=True):
     # prediction process
     if gpu:
-        input = input.cuda()
-    prediction = model(torch.autograd.Variable(input.float())).view(-1)
+        input_batch = input_batch.cuda()
+    prediction = model(torch.autograd.Variable(input_batch.float())).view(-1)
     confs = prediction.detach().cpu().numpy() if gpu else prediction.detach().numpy()
     for i, conf in enumerate(confs):
         print(f"slice_{i}: " + "{} with confidence {:.2f}%"
@@ -102,24 +102,23 @@ def main(im=None, image_path='', model_path=None, mode=None, gpu=True, parallel=
                       for example; gpu_index='0' lets you use device:0, so as gpu_index='1,2', default='0'(None).
     :return: a numerical value representing the prediction confidence interval.
     """
-    # Load model
-    torch.hub._validate_not_a_forked_repo=lambda a,b,c: True
-    if model_path is None:
-        model_path = '../models/JUH_noisy_model.pt'
-    model = load_model(model_path, gpu, parallel, gpu_index)
-
     # Read image
     if mode == 'batch':
         assert os.path.isdir(image_path) or len(im.shape) == 4, "selecting batch-mode, yet a single file is passed."
         im = load_batch(list(Path(image_path).glob('*.png'))) if im is None else im
-        im = torch.FloatTensor(im)  # Convert to tensor
+        im = torch.from_numpy(im)  # Convert to tensor
     elif mode == 'single':
         assert os.path.isfile(image_path) or len(im.shape) == 3, "please, assign argument --mode batch"
         im = load_batch([image_path]) if im is None \
             else standardize(im).reshape(1, *im.shape[-3:])  # prepare raw image
-        im = torch.FloatTensor(im)  # Convert to tensor
+        im = torch.from_numpy(im)  # Convert to tensor
     else:
-        pass  # mode is None in case of called from main ## depricated
+        pass  # mode is None in case of called from main ## deprecated
+
+    # Load model
+    if model_path is None:
+        model_path = '../models/JUH_noisy_model.pt'
+    model = load_model(model_path, im.shape, gpu, parallel, gpu_index)
 
     # Predict
     confs = predict(im, model)
@@ -154,6 +153,6 @@ if __name__ == "__main__":
         torch.backends.cudnn.benchmark = True
 
     _ = predict(image_path=args.image_path, model_path=args.model_path,
-                      mode=args.mode, gpu=args.gpu, parallel=args.parallel, gpu_index=args.gpu_index)
+                mode=args.mode, gpu=args.gpu, parallel=args.parallel, gpu_index=args.gpu_index)
 
 
