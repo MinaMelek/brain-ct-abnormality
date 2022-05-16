@@ -1,8 +1,11 @@
 import os
 import sys
 from pathlib import Path
-import numpy as np
+# import numpy as np
+import cupy as cp
 from torch.utils.data import Dataset, DataLoader
+from torch.utils.dlpack import from_dlpack
+# import torch.multiprocessing as mp
 from preprocessing import slice_preprocess, download_data
 from tumor_predict import load_model, predict as tumor_predict
 from stroke_predict import predict as stroke_predict, class_num as stroke_classes
@@ -44,8 +47,47 @@ class ImageDataset(Dataset):
         image = slice_preprocess(img_path, self.size)
         if self.transform:
             image = self.transform(image)
-        return image
+        return from_dlpack(image.toDlpack())
 
+# +
+# # Nvidia Dali
+# from nvidia.dali.pipeline import pipeline_def
+# import nvidia.dali.types as types
+# import nvidia.dali.fn as fn
+# from nvidia.dali.plugin.pytorch import DALIGenericIterator
+
+# data_dir = '../assets/JPG/'
+
+
+# @pipeline_def(batch_size=64, num_threads=4, device_id=0)
+# def get_dali_pipeline(data_dir, crop_size):
+#     images, labels = fn.readers.file(file_root=data_dir, name="Reader")
+#     # decode data on the GPU
+#     images = fn.decoders.image_random_crop(images, device="mixed", output_type=types.RGB)
+#     # the rest of processing happens on the GPU as well
+#     images = fn.resize(images, resize_x=crop_size, resize_y=crop_size)
+#     images = fn.crop_mirror_normalize(images,
+#                                       mean=[0.485 * 255, 0.456 * 255, 0.406 * 255],
+#                                       std=[0.229 * 255, 0.224 * 255, 0.225 * 255],
+#                                       mirror=fn.random.coin_flip())
+#     return images, labels
+
+
+# train_data = DALIGenericIterator(
+#     [get_dali_pipeline(data_dir, 256)],
+#     ['data', 'label'],
+#     reader_name='Reader'
+# )
+# """
+# [Warning]: File i0000010_0_0.dcm has extension that is not supported by the decoder. 
+# Supported extensions: .flac, .ogg, .wav, .jpg, .jpeg, .png, .bmp, .tif, .tiff, .pnm, .ppm, .pgm, .pbm, .jp2, .webp, 
+# """
+# for x in train_data:
+#     print(x[0]['label'].shape, x[0]['data'].shape)
+
+# +
+# fn.python_function
+# -
 
 def main():
     patient_dir = download_data(args.url)
@@ -72,16 +114,16 @@ def main():
         # PREDICTION
         batch_size = 64
         test_data = ImageDataset(target_files, dir_path, new_size)
-        test_dataloader = DataLoader(test_data, batch_size=batch_size, shuffle=False, pin_memory=True, num_workers=26)
+        test_dataloader = DataLoader(test_data, batch_size=batch_size, shuffle=False)  #, pin_memory=True, num_workers=26)
         tumor_model = load_model(os.path.join(args.model_dir, 'JUH_noisy_model.pt'))  # preload to remove overhead
-        predict_1 = np.zeros(shape=(len(test_data), stroke_classes))
-        predict_2 = np.zeros(shape=(len(test_data),))
+        predict_1 = cp.zeros(shape=(len(test_data), stroke_classes))
+        predict_2 = cp.zeros(shape=(len(test_data),))
         for j, images in enumerate(test_dataloader):
             p_1 = stroke_predict(images, model_path=os.path.join(args.model_dir, 'CTish_frac_model.pt'), parallel=True)
             p_2 = tumor_predict(images, tumor_model)  # TODO: remake for stroke, use args for inputs
             idx = j*batch_size
-            predict_1[idx: idx+len(images)] = p_1
-            predict_2[idx: idx+len(images)] = p_2
+            predict_1[idx: idx+len(images)] = cp.asarray(p_1)
+            predict_2[idx: idx+len(images)] = cp.asarray(p_2)
         series[i] = [dir_path, predict_1, predict_2]  # TODO: format the output
         i += 1
     return series
