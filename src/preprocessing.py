@@ -5,12 +5,12 @@ Created on Tue Apr 26 14:24:51 2022
 @author: Mina
 """
 import os.path
-import numpy as np
+import cupy as cp
 import pydicom
-from skimage.transform import resize  # , rotate
-from skimage import morphology
+from cupyx.scipy import ndimage
+from cucim.skimage.transform import resize  # , rotate
+from cucim.skimage import morphology
 from skimage.io import imread as sk_imread
-from scipy import ndimage
 # import cv2
 from prepare_dicom import prep_pipeline
 
@@ -35,17 +35,19 @@ def remove_noise(brain_image, create_mask=False):
         In this case the pixel belongs to the same class if it's between the origin
         and the radius
     """
-
-    if create_mask:
+    
+    # Deprecated
+    if create_mask:  
         # img = cv2.merge([brain_image, brain_image, brain_image])
         # mask = cv2.threshold(img, 210, 255, cv2.THRESH_BINARY)[1][:, :, 0]
         mask = brain_image
     else:
         mask = brain_image
 
-    segmentation = morphology.dilation(mask, np.ones((5, 5)))
+    brain_image = cp.array(brain_image)  # convert to cupy array type
+    segmentation = morphology.dilation(brain_image, cp.ones((5, 5)))
     labels, label_nb = ndimage.label(segmentation)
-    label_count = np.bincount(labels.ravel().astype(int))
+    label_count = cp.bincount(labels.ravel().astype(int))
     # The size of label_count is the number of classes/segmentations found
     # We don't use the first class since it's the background
     label_count[0] = 0
@@ -53,9 +55,9 @@ def remove_noise(brain_image, create_mask=False):
     # In this case should be the brain
     mask = labels == label_count.argmax()
     # Improve the brain mask
-    mask = morphology.dilation(mask, np.ones((5, 5)))
+    mask = morphology.dilation(mask, cp.ones((5, 5)))
     mask = ndimage.morphology.binary_fill_holes(mask)
-    mask = morphology.dilation(mask, np.ones((3, 3)))
+    mask = morphology.dilation(mask, cp.ones((3, 3)))
     # Since the pixels in the mask are zero's and one's
     # We can multiply the original image to only keep the brain region
     masked_image = mask * brain_image
@@ -73,11 +75,11 @@ def crop_image(image):
     # Create a mask with the background pixels
     mask = image == 0
     # Find the brain area
-    coords = np.array(np.nonzero(~mask))
+    coords = cp.array(cp.nonzero(~mask))
     if coords.size == 0:
         return image
-    top_left = np.min(coords, axis=1)
-    bottom_right = np.max(coords, axis=1)
+    top_left = cp.min(coords, axis=1)
+    bottom_right = cp.max(coords, axis=1)
     # Remove the background
     cropped_image = image[top_left[0]:bottom_right[0],
                           top_left[1]:bottom_right[1]]
@@ -108,7 +110,7 @@ def add_pad(image, new_height=512, new_width=512, to_scale=True):
         image = resize_to_scale(image, new_height, new_width)
     # Pad the rest to fill the new size
     height, width = image.shape
-    final_image = np.zeros((new_height, new_width))
+    final_image = cp.zeros((new_height, new_width))
     pad_left = int((new_width - width) / 2)
     pad_top = int((new_height - height) / 2)
     # Replace the pixels with the image's pixels
@@ -138,7 +140,7 @@ def window_slice(slice_s, w_level=40, w_width=120, rotate=False, size=None):
     size = slice_s.shape if size is None else size
     slice_s = window(slice_s, w_level, w_width)
     if rotate:
-        slice_s = np.rot90(slice_s)  # rotate for horizontal scans
+        slice_s = cp.rot90(slice_s)  # rotate for horizontal scans
     slice_s = remove_noise(slice_s)  # remove artifacts
     slice_s = zoom_on_image(slice_s, size)  # center and pad to size
 
@@ -168,7 +170,7 @@ def load_batch(im_files):
         # Get image into shape
         im_norm = standardize(im)
         im_list.append(im_norm)
-    im_list = np.array(im_list)
+    im_list = cp.array(im_list)
     return im_list
 
 
@@ -205,7 +207,7 @@ def slice_preprocess(file_name, new_size):
     # Center and zoom into the brain.
     image = zoom_on_image(image, new_size)
     # Convert to rgb image
-    image = np.concatenate([image[:, :, np.newaxis], image[:, :, np.newaxis], image[:, :, np.newaxis]], 2)
+    image = cp.concatenate([image[:, :, cp.newaxis], image[:, :, cp.newaxis], image[:, :, cp.newaxis]], 2)
     # standardize images
     image = standardize(image)
 

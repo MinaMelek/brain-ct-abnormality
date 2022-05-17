@@ -10,6 +10,7 @@ from pathlib import Path
 import torch
 import torch.nn as nn
 from torchvision.models import densenet121
+import torch_tensorrt
 from preprocessing import load_batch, standardize
 import argparse
 
@@ -51,7 +52,7 @@ class densenet121_tumor(nn.Module):
         return x
 
 
-def load_model(model_path, gpu=True, parallel=False, gpu_index=None):
+def load_model(model_path, gpu=True, parallel=False, gpu_index=None, tensorRT=False):
     # TODO: structure the same model for stroke and use the same script for both
     if gpu_index:
         os.environ['CUDA_VISIBLE_DEVICES'] = gpu_index
@@ -64,7 +65,12 @@ def load_model(model_path, gpu=True, parallel=False, gpu_index=None):
         model = model.cuda()
     if parallel:
         model = nn.DataParallel(model)
-
+    if tensorRT:  # TODO: fix
+        model = torch_tensorrt.compile(model,
+                                       inputs=[torch_tensorrt.Input((64, 3, 256, 256))],
+                                       enabled_precisions={torch_tensorrt.dtype.half}  # Run with FP16
+                                       )
+    
     return model
 
 
@@ -73,7 +79,7 @@ def predict(input_batch: torch.float64, model, gpu=True):
     if gpu:
         input_batch = input_batch.cuda()
     prediction = model(torch.autograd.Variable(input_batch.float())).view(-1)
-    confs = prediction.detach().cpu().numpy() if gpu else prediction.detach().numpy()
+    confs = prediction.detach().cpu() if gpu else prediction.detach()
     for i, conf in enumerate(confs):
         print(f"slice_{i}: " + "{} with confidence {:.2f}%"
               .format(*('Tumor', conf * 100) if conf > 0.5 else ('Normal', (1 - conf) * 100)))

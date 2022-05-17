@@ -1,6 +1,7 @@
 import joblib
 import pydicom
-import numpy as np
+import cupy as cp
+# import numpy as np
 import os
 # import cv2
 from PIL import Image
@@ -40,7 +41,7 @@ def window_image(img, window_center, window_width, intercept, slope):
 
 
 def resize(img, new_w, new_h):
-    img = Image.fromarray(img.astype(np.int8), mode="L")
+    img = Image.fromarray(img.astype(cp.int8), mode="L")
     return img.resize((new_w, new_h), resample=Image.BICUBIC)
 
 
@@ -59,7 +60,7 @@ def prepare_image(img_path):
     metadata = get_metadata_from_dicom(img_dicom)
     img = window_image(img_dicom.pixel_array, **metadata)
     img = normalize_minmax(img) * 255
-    img = Image.fromarray(img.astype(np.int8), mode="L")
+    img = Image.fromarray(img.astype(cp.int8), mode="L")
     return img_id, img
 
 
@@ -90,11 +91,11 @@ def prep_pipeline(img_path='', img=None, rescale=False, new_w=None, new_h=None):
     if metadata['window_width'] > 500:  # width > 500 isn't good for brain tissue
         raise AttributeError("bad Window")
     img = window_image(img_dicom.pixel_array, **metadata)
-    img = normalize_minmax(img) * 255
+    img = normalize_minmax(cp.asarray(img)) * 255
     if rescale:
         img = resize(img, new_w, new_h)
         img = img.convert('RGB')
-        img = np.array(img, dtype=np.uint8)
+        img = cp.array(img, dtype=cp.uint8)
         img = img[:, :, 0]  # RGB to gray: cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
     else:
         pass

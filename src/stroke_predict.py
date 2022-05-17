@@ -100,7 +100,7 @@ def predict(im=None, image_path='', model_path=None, mode=None, gpu=True, parall
 
     # Predict
     prediction = model(torch.autograd.Variable(im.float())).sigmoid()
-    confs = prediction.detach().cpu().numpy() if gpu else prediction.detach().numpy()
+    confs = prediction.detach().cpu() if gpu else prediction.detach()
     for i, conf in enumerate(confs):
         cls_id = conf.argmax()
         print(f"slice_{i}: \"{stroke_classes[cls_id]}\" with confidence {conf[cls_id]*100:.2f}%")
