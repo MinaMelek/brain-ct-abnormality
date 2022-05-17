@@ -1,0 +1,13 @@
+cucim==22.4.0
+cupy==10.4.0
+cupy_cuda114==9.3.0
+joblib==1.1.0
+nvidia_dlprof_pytorch_nvtx==1.7.0
+Pillow==9.1.0
+pydicom==2.3.0
+scikit_image==0.19.2
+skimage==0.0
+torch==1.11.0a0+b6df043
+torch_tensorrt==1.0.0a0
+torchvision==0.11.0a0
+tqdm==4.62.3
