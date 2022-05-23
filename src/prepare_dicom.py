@@ -90,7 +90,8 @@ def prep_pipeline(img_path='', img=None, rescale=False, new_w=None, new_h=None):
     metadata = get_metadata_from_dicom(img_dicom)
     if metadata['window_width'] > 500:  # width > 500 isn't good for brain tissue
         raise AttributeError("bad Window")
-    img = window_image(img_dicom.pixel_array, **metadata)
+    img = cp.asarray(img_dicom.pixel_array)
+    img = window_image(img, **metadata)
     img = normalize_minmax(cp.asarray(img)) * 255
     if rescale:
         img = resize(img, new_w, new_h)
