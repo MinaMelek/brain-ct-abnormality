@@ -127,6 +127,7 @@ def zoom_on_image(image, im_size=(512, 512), zoom=True):
 
 def window(slice_s, w_level=40, w_width=120):
     # Apply brain window
+    slice_s = cp.asarray(slice_s)
     w_min = w_level - w_width / 2
     w_max = w_level + w_width / 2
     slice_s = (slice_s - w_min)*(255/(w_max-w_min))  # or slice_s = (slice_s - (w_level-(w_width/2)))*(255/(w_width))
