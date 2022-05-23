@@ -74,9 +74,6 @@ def predict(input_batch: torch.float64, model, gpu=True):
         input_batch = input_batch.cuda()
     prediction = model(torch.autograd.Variable(input_batch.float())).view(-1)
     confs = prediction.detach().cpu().numpy() if gpu else prediction.detach().numpy()
-    for i, conf in enumerate(confs):
-        print(f"slice_{i}: " + "{} with confidence {:.2f}%"
-              .format(*('Tumor', conf * 100) if conf > 0.5 else ('Normal', (1 - conf) * 100)))
         
     return confs
 
@@ -116,6 +113,9 @@ def main(im=None, image_path='', model_path=None, mode=None, gpu=True, parallel=
 
     # Predict
     confs = predict(im, model)
+    for i, conf in enumerate(confs):
+        print(f"slice_{i}: " + "{} with confidence {:.2f}%"
+              .format(*('Tumor', conf * 100) if conf > 0.5 else ('Normal', (1 - conf) * 100)))
     return confs
 
 

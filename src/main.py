@@ -73,12 +73,15 @@ def main():
         batch_size = 64
         test_data = ImageDataset(target_files, dir_path, new_size)
         test_dataloader = DataLoader(test_data, batch_size=batch_size, shuffle=False, pin_memory=True, num_workers=26)
-        tumor_model = load_model(os.path.join(args.model_dir, 'JUH_noisy_model.pt'))  # preload to remove overhead
+        # preload to remove overhead
+        tumor_model = load_model(os.path.join(args.model_dir, 'JUH_noisy_model.pt'),
+                                 gpu=args.gpu, parallel=args.parallel, gpu_index=args.gpu_index)
         predict_1 = np.zeros(shape=(len(test_data), stroke_classes))
         predict_2 = np.zeros(shape=(len(test_data),))
         for j, images in enumerate(test_dataloader):
-            p_1 = stroke_predict(images, model_path=os.path.join(args.model_dir, 'CTish_frac_model.pt'), parallel=True)
-            p_2 = tumor_predict(images, tumor_model)  # TODO: remake for stroke, use args for inputs
+            p_1 = stroke_predict(images, model_path=os.path.join(args.model_dir, 'CTish_frac_model.pt'),
+                                 gpu=args.gpu, parallel=args.parallel, gpu_index=args.gpu_index)
+            p_2 = tumor_predict(images, tumor_model, gpu=args.gpu)  # TODO: remake for stroke, use args for inputs
             idx = j*batch_size
             predict_1[idx: idx+len(images)] = p_1
             predict_2[idx: idx+len(images)] = p_2
@@ -117,4 +120,5 @@ if __name__ == '__main__':
     default_stdout = sys.stdout
     sys.stdout = Logger()
     series_dict = main()
+    print(series_dict)
     sys.stdout = default_stdout
