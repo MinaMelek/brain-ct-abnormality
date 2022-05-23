@@ -15,7 +15,7 @@ import argparse
 
 # classes definitions
 stroke_classes = ['Intraventricular', 'Intraparenchymal', 'Subarachnoid', 
-                  'Epidural', 'Subdural', 'No_Hemorrhage', 'Fracture_Yes_No']
+                  'Epidural', 'Subdural', 'No_Hemorrhage', 'Fracture']
 class_num = len(stroke_classes)
 
 
@@ -61,7 +61,7 @@ def load_model(model_path, gpu, parallel, gpu_index):
     return model
 
 
-def predict(im=None, image_path='', model_path=None, mode=None, gpu=True, parallel=True, gpu_index=None):
+def predict(im=None, image_path='', model_path=None, mode=None, gpu=True, parallel=True, gpu_index=None, log=True):
     """
     Apply hemorrhage and fracture model
 
@@ -74,6 +74,7 @@ def predict(im=None, image_path='', model_path=None, mode=None, gpu=True, parall
     :param parallel: a bool indicator to whether using multiple devices in parallel or not, default=False.
     :param gpu_index: the used gpu devices indices (can use multiple devices if parallel=True),
                       for example; gpu_index='0' lets you use device:0, so as gpu_index='1,2', default='0'(None).
+    :param log: if true print prediction results of each file, default=True.
     :return: a numerical value representing the prediction confidence interval.
     """
     # Load model
@@ -101,9 +102,10 @@ def predict(im=None, image_path='', model_path=None, mode=None, gpu=True, parall
     # Predict
     prediction = model(torch.autograd.Variable(im.float())).sigmoid()
     confs = prediction.detach().cpu() if gpu else prediction.detach()
-    for i, conf in enumerate(confs):
-        cls_id = conf.argmax()
-        print(f"slice_{i}: \"{stroke_classes[cls_id]}\" with confidence {conf[cls_id]*100:.2f}%")
+    if log:
+        for i, conf in enumerate(confs):
+            cls_id = conf.argmax()
+            print(f"slice_{i}: \"{stroke_classes[cls_id]}\" with confidence {conf[cls_id]*100:.2f}%")
     return confs
 
 

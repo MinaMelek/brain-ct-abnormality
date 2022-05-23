@@ -8,7 +8,8 @@ from torch.utils.dlpack import from_dlpack
 # import torch.multiprocessing as mp
 from preprocessing import slice_preprocess, download_data
 from tumor_predict import load_model, predict as tumor_predict
-from stroke_predict import predict as stroke_predict, class_num as stroke_classes
+from stroke_predict import predict as stroke_predict, stroke_classes
+import json
 import argparse
 
 
@@ -93,6 +94,7 @@ def main():
     patient_dir = download_data(args.url)
     i = 0
     series = {}
+    output = {}
     for dir_path, dir_names, filenames in os.walk(patient_dir):
         # Filter to Dicom image only.
         filenames = [fi for fi in filenames if fi.endswith(".dcm")]
@@ -114,19 +116,38 @@ def main():
         # PREDICTION
         batch_size = 64
         test_data = ImageDataset(target_files, dir_path, new_size)
-        test_dataloader = DataLoader(test_data, batch_size=batch_size, shuffle=False)  #, pin_memory=True, num_workers=26)
-        tumor_model = load_model(os.path.join(args.model_dir, 'JUH_noisy_model.pt'))  # preload to remove overhead
-        predict_1 = cp.zeros(shape=(len(test_data), stroke_classes))
+        test_dataloader = DataLoader(test_data, batch_size=batch_size, shuffle=False)  #, pin_memory=True, num_workers=24)
+        # preload to remove overhead
+        tumor_model = load_model(os.path.join(args.model_dir, 'JUH_noisy_model.pt'),
+                                 gpu=args.gpu, parallel=args.parallel, gpu_index=args.gpu_index)
+        predict_1 = cp.zeros(shape=(len(test_data), len(stroke_classes)))
         predict_2 = cp.zeros(shape=(len(test_data),))
         for j, images in enumerate(test_dataloader):
-            p_1 = stroke_predict(images, model_path=os.path.join(args.model_dir, 'CTish_frac_model.pt'), parallel=True)
-            p_2 = tumor_predict(images, tumor_model)  # TODO: remake for stroke, use args for inputs
+            p_1 = stroke_predict(images, model_path=os.path.join(args.model_dir, 'CTish_frac_model.pt'),
+                                 gpu=args.gpu, parallel=args.parallel, gpu_index=args.gpu_index)
+            p_2 = tumor_predict(images, tumor_model, gpu=args.gpu)  # TODO: remake for stroke, use args for inputs
             idx = j*batch_size
             predict_1[idx: idx+len(images)] = cp.asarray(p_1)
             predict_2[idx: idx+len(images)] = cp.asarray(p_2)
-        series[i] = [dir_path, predict_1, predict_2]  # TODO: format the output
+        series[i] = [dir_path, predict_1, predict_2]
+        # format stroke prediction
+        out_1 = dict(zip(stroke_classes, map(lambda x: f"{x * 100:.2f}%", predict_1.mean(0))))  # Todo: Change mean
+        # format tumor prediction
+        tumor_mean = (predict_2 > 0.5).mean()  # percentage of tumor slices
+        from collections import defaultdict
+        oc, h = defaultdict(lambda x=0: x), 0
+        for itm in predict_2:
+            if itm > 0.5:
+                oc[h] += 1
+            else:
+                h += 1
+        max_occ = max(oc.values())  # max number of consecutive slices predicted as tumor
+        out_2 = {'Tumor': f"{predict_2[predict_2 > 0.5].mean() * 100:.2f}%" if max_occ > 3 and tumor_mean > 0.3 else
+                          f"{predict_2[predict_2 <= 0.5].mean() * 100:.2f}%"}
+        output[f"series_{i}"] = {'Hemorrhage': out_1, "Tumor": out_2}  # Todo:Rethink the structure
+
         i += 1
-    return series
+    return series, output
 
 
 if __name__ == '__main__':
@@ -139,6 +160,8 @@ if __name__ == '__main__':
                         help='use model in parallel mode in case of multiple devices, default: False')
     parser.add_argument('-m-dir', dest='model_dir', type=str, default=os.path.join('..', 'models'),
                         help='select pytorch models directory, default: "../models/"')
+    parser.add_argument('-o', dest='output_file', type=str, default=os.path.join('..', 'output', 'output.json'),
+                        help='path for output json file, default: "../output/output.json"')
     parser.add_argument('-url', dest='url', type=str, required=True,
                         help='url for patient scans to produce prediction. (required)')
     parser.add_argument('-size', dest='image_size', type=int, default=256,
@@ -158,5 +181,8 @@ if __name__ == '__main__':
 
     default_stdout = sys.stdout
     sys.stdout = Logger()
-    series_dict = main()
+    assert os.path.splitext(args.output_file) == '.json', 'Output file extension is not json'
+    series_dict, output = main()
+    with open(args.output_file, "w") as outfile:
+        json.dump(output, outfile, indent=4)
     sys.stdout = default_stdout

@@ -74,15 +74,16 @@ def load_model(model_path, gpu=True, parallel=False, gpu_index=None, tensorRT=Fa
     return model
 
 
-def predict(input_batch: torch.float64, model, gpu=True):
+def predict(input_batch: torch.float64, model, gpu=True, log=True):
     # prediction process
     if gpu:
         input_batch = input_batch.cuda()
     prediction = model(torch.autograd.Variable(input_batch.float())).view(-1)
     confs = prediction.detach().cpu() if gpu else prediction.detach()
-    for i, conf in enumerate(confs):
-        print(f"slice_{i}: " + "{} with confidence {:.2f}%"
-              .format(*('Tumor', conf * 100) if conf > 0.5 else ('Normal', (1 - conf) * 100)))
+    if log:
+        for i, conf in enumerate(confs):
+            print(f"slice_{i}: " + "{} with confidence {:.2f}%"
+                  .format(*('Tumor', conf * 100) if conf > 0.5 else ('Normal', (1 - conf) * 100)))
         
     return confs
 
