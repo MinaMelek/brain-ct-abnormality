@@ -1,0 +1,16 @@
+{
+    "series_0": {
+        "Hemorrhage": {
+            "Intraventricular": "0.31%",
+            "Intraparenchymal": "1.50%",
+            "Subarachnoid": "0.24%",
+            "Epidural": "0.95%",
+            "Subdural": "1.16%",
+            "No_Hemorrhage": "91.62%",
+            "Fracture": "15.62%"
+        },
+        "Tumor": {
+            "Tumor": "89.21%"
+        }
+    }
+}

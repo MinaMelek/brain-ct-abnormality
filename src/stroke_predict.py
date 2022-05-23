@@ -15,7 +15,7 @@ import argparse
 
 # classes definitions
 stroke_classes = ['Intraventricular', 'Intraparenchymal', 'Subarachnoid', 
-                  'Epidural', 'Subdural', 'No_Hemorrhage', 'Fracture_Yes_No']
+                  'Epidural', 'Subdural', 'No_Hemorrhage', 'Fracture']
 class_num = len(stroke_classes)
 
 
