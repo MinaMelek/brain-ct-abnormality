@@ -1,0 +1,45 @@
+System Config
+GPU Count,4
+GPU Name(s),NVIDIA RTX A5000, NVIDIA RTX A5000, NVIDIA RTX A5000, NVIDIA RTX A5000
+CPU Model,AMD EPYC 7402 24-Core Processor
+GPU Driver Version,470.57.02
+Framework,PyTorch 1.11.0a0+b6df043
+CUDA Version,11.5
+cuDNN Version,8.3.0
+NSys Version,2021.3.2.12-9700a21
+DLProf Version,v1.8.0
+DLProf Build,29839685
+
+Summary Report
+Wall Clock Time (ns),15022814147
+Tensor Core Kernel Utilization %,1.7
+GPU Utilization %,0.5
+Tensor Core Kernel Duration %,0.0
+Non-Tensor Core Kernel Duration %,0.5
+Memory Duration %,0.0
+Dataloader Duration %,11.3
+IO Duration %,0.0
+CPU Duration %,40.4
+Other Duration %,47.8
+
+Iterations
+Total Iterations,1
+Aggregated Iterations,1
+Start Iteration,0
+Stop Iteration,0
+Average Iteration Time (ns),15022814147.0
+Iteration Time Standard Deviation,0.0
+
+All Ops
+,GPU Time (ns),CPU Time (ns),# Ops
+All ops,297731043,14258076188,9866
+Ops using TC,129019441,728724095,87
+Ops eligible for TC but not using,114200136,6924663554,399
+All other ops,54511466,6604688539,9380
+
+All Kernels
+,GPU Time (ns),CPU Time (ns),# Kernels
+All kernels,328991218,90210971,52
+Kernels using TC,4579304,1023952,3
+Memory,15166612,39446242,3
+All other kernels,309245302,49740777,46
