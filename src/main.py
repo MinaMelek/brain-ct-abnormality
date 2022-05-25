@@ -139,7 +139,7 @@ if __name__ == '__main__':
 
     default_stdout = sys.stdout
     sys.stdout = Logger()
-    assert os.path.splitext(args.output_file) == '.json', 'Output file extension is not json'
+    assert os.path.splitext(args.output_file)[-1] == '.json', 'Output file extension is not json'
     series_dict, output = main()
     with open(args.output_file, "w") as outfile:
         json.dump(output, outfile, indent=4)
