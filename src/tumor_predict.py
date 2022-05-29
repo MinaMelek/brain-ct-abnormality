@@ -68,7 +68,7 @@ def load_model(model_path, gpu=True, parallel=False, gpu_index=None):
     return model
 
 
-def predict(input_batch: torch.float64, model, gpu=True, log=True):
+def predict(input_batch: torch.float, model, gpu=True, log=True):
     # prediction process
     if gpu:
         input_batch = input_batch.cuda()

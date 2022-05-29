@@ -206,10 +206,10 @@ def slice_preprocess(file_name, new_size):
     image = remove_noise(image)
     # Center and zoom into the brain.
     image = zoom_on_image(image, new_size)
-    # Convert to rgb image
-    image = np.concatenate([image[:, :, np.newaxis], image[:, :, np.newaxis], image[:, :, np.newaxis]], 2)
-    # standardize images
-    image = standardize(image)
+    # # Convert to rgb image
+    # image = np.concatenate([image[:, :, np.newaxis], image[:, :, np.newaxis], image[:, :, np.newaxis]], 2)
+    # # standardize images
+    # image = standardize(image)
 
     return image
 

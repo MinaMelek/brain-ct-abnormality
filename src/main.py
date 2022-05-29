@@ -3,7 +3,7 @@ import sys
 from pathlib import Path
 import numpy as np
 from torch.utils.data import Dataset, DataLoader
-from preprocessing import slice_preprocess, download_data
+from preprocessing import slice_preprocess, download_data, standardize
 from tumor_predict import load_model, predict as tumor_predict
 from stroke_predict import predict as stroke_predict, stroke_classes
 import json
@@ -30,19 +30,39 @@ class Logger(object):
 
 
 class ImageDataset(Dataset):
-    def __init__(self, target_files, dir_path, size, transform=None):
+    def __init__(self, target_files, dir_path, size, transform=None, stack=False):
         self.target_files = target_files
         self.dir_path = dir_path
         self.size = size
         self.transform = transform
+        self.stack = stack
 
     def __len__(self):
         return len(self.target_files)
 
     def __getitem__(self, idx):
+        idx = idx % self.__len__()
         img_path = self.dir_path / self.target_files[idx]
         # Prepare image (slice) for prediction
         image = slice_preprocess(img_path, self.size)
+        # stack mode means combine 3 slices
+        if self.stack:
+            if idx > 0:
+                img_path = self.dir_path / self.target_files[idx-1]
+                image_pre = slice_preprocess(img_path, self.size)
+            else:
+                image_pre = image.copy()
+
+            if idx < self.__len__()-1:
+                img_path = self.dir_path / self.target_files[idx+1]
+                image_post = slice_preprocess(img_path, self.size)
+            else:
+                image_post = image.copy()
+        else:
+            image_pre = image.copy()
+            image_post = image.copy()
+        # Convert to rgb image
+        image = np.concatenate([image_pre[:, :, np.newaxis], image[:, :, np.newaxis], image_post[:, :, np.newaxis]], 2)
         if self.transform:
             image = self.transform(image)
         return image
@@ -50,9 +70,10 @@ class ImageDataset(Dataset):
 
 def main():
     patient_dir = download_data(args.url)
+    patient_id = Path(patient_dir).name
     i = 0
     series = {}
-    output = {}
+    result = {}
     for dir_path, dir_names, filenames in os.walk(patient_dir):
         # Filter to Dicom image only.
         filenames = [fi for fi in filenames if fi.endswith(".dcm")]
@@ -64,6 +85,8 @@ def main():
         # TODO: Decide how to use these ids
         study_id, series_id = dir_path.parts[-2:]
         print(f"{dir_path}: Study: {study_id}, Series: {series_id}")
+        if study_id not in result.keys():
+            result[study_id] = []
         # Only middle slices should be selected
         n_files = len(filenames)
         ignored_portion = n_files // 5
@@ -73,7 +96,7 @@ def main():
 
         # PREDICTION
         batch_size = 64
-        test_data = ImageDataset(target_files, dir_path, new_size)
+        test_data = ImageDataset(target_files, dir_path, new_size, transform=standardize)
         test_dataloader = DataLoader(test_data, batch_size=batch_size, shuffle=False, pin_memory=True, num_workers=24)
         # preload to remove overhead
         tumor_model = load_model(os.path.join(args.model_dir, 'JUH_noisy_model.pt'),
@@ -89,9 +112,10 @@ def main():
             predict_2[idx: idx+len(images)] = p_2
         series[i] = [dir_path, predict_1, predict_2]
         # format stroke prediction
-        out_1 = dict(zip(stroke_classes, map(lambda x: f"{x * 100:.2f}%", predict_1.mean(0))))  # Todo: Change mean
+        # out_1 = dict(zip(stroke_classes, map(lambda x: f"{x * 100:.2f}%", predict_1.max(0))))  # Todo: Change mean
+        out_1 = predict_1.max(0)
         # format tumor prediction
-        tumor_mean = (predict_2 > 0.5).mean()  # percentage of tumor slices
+        # tumor_mean = (predict_2 > 0.5).mean()  # percentage of tumor slices
         from collections import defaultdict
         oc, h = defaultdict(lambda x=0: x), 0
         for itm in predict_2:
@@ -100,12 +124,20 @@ def main():
             else:
                 h += 1
         max_occ = max(oc.values())  # max number of consecutive slices predicted as tumor
-        out_2 = {'Tumor': f"{predict_2[predict_2 > 0.5].mean() * 100:.2f}%" if max_occ > 3 and tumor_mean > 0.3 else
-                          f"{predict_2[predict_2 <= 0.5].mean() * 100:.2f}%"}
-        output[f"series_{i}"] = {'Hemorrhage': out_1, "Tumor": out_2}  # Todo:Rethink the structure
+        # out_2 = {'Tumor': f"{predict_2.max() * 100:.2f}%" if max_occ > 2 else
+        #                   f"{predict_2.mean() * 100:.2f}%"}
+        out_2 = predict_2.max() if max_occ > 2 else predict_2.mean()
+        result[study_id].append([*out_1, out_2])
 
         i += 1
-    return series, output
+
+    study = {}
+    for key, val in result.items():
+        study_out = np.array(val).mean(0)
+        study[key] = {'Hemorrhage': dict(zip(stroke_classes, map(lambda x: f"{x * 100:.2f}%", study_out[:-1]))),
+                      'Tumor': study_out[-1]}
+
+    return series, {patient_id: study}
 
 
 if __name__ == '__main__':
