@@ -133,7 +133,7 @@ def main():
 
     study = {}
     for key, val in result.items():
-        study_out = np.array(val).mean(0)
+        study_out = np.array(val).mean(0).round(5)
         study[key] = {'Hemorrhage': dict(zip(stroke_classes, study_out[:-1])),
                       'Tumor': study_out[-1]}
 
