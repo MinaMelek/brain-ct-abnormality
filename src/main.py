@@ -126,7 +126,7 @@ def main():
         max_occ = max(oc.values())  # max number of consecutive slices predicted as tumor
         # out_2 = {'Tumor': f"{predict_2.max() * 100:.2f}%" if max_occ > 2 else
         #                   f"{predict_2.mean() * 100:.2f}%"}
-        out_2 = predict_2.max() if max_occ > 2 else predict_2.mean()
+        out_2 = predict_2[predict_2 > 0.5].mean() if max_occ > 2 else predict_2[predict_2 <= 0.5].mean()
         result[study_id].append([*out_1, out_2])
 
         i += 1
@@ -134,7 +134,7 @@ def main():
     study = {}
     for key, val in result.items():
         study_out = np.array(val).mean(0)
-        study[key] = {'Hemorrhage': dict(zip(stroke_classes, map(lambda x: f"{x * 100:.2f}%", study_out[:-1]))),
+        study[key] = {'Hemorrhage': dict(zip(stroke_classes, study_out[:-1])),
                       'Tumor': study_out[-1]}
 
     return series, {patient_id: study}
