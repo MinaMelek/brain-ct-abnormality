@@ -2,15 +2,15 @@
     "p_333_series": {
         "assets": {
             "Hemorrhage": {
-                "Intraventricular": "2.77%",
-                "Intraparenchymal": "20.50%",
-                "Subarachnoid": "1.47%",
-                "Epidural": "2.95%",
-                "Subdural": "37.83%",
-                "No_Hemorrhage": "99.39%",
-                "Fracture": "26.39%"
+                "Intraventricular": 0.02770642749965191,
+                "Intraparenchymal": 0.2049970030784607,
+                "Subarachnoid": 0.014723141677677631,
+                "Epidural": 0.029458221048116684,
+                "Subdural": 0.3783261775970459,
+                "No_Hemorrhage": 0.9939208030700684,
+                "Fracture": 0.263897180557251
             },
-            "Tumor": 1.0
+            "Tumor": 0.9805329177114699
         }
     }
 }
