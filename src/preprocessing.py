@@ -87,8 +87,8 @@ def crop_image(image):
 def resize_to_scale(image, new_height=512, new_width=512):
     height, width = image.shape  # original size
     # Calculate size preserving the aspect ratio
-    resized_height = min(new_height, height*new_width//width)
-    resized_width = min(new_width, width*new_height//height)
+    resized_height = min(new_height, (height*new_width)//width)
+    resized_width = min(new_width, (width*new_height)//height)
     image = resize(image, output_shape=(resized_height, resized_width))
     return image
 
@@ -118,6 +118,8 @@ def add_pad(image, new_height=512, new_width=512, to_scale=True):
 
 def zoom_on_image(image, im_size=(512, 512), zoom=True):
     # if zoom is False, only center the image
+    if max(im_size) < image.shape[0]:  # assumes square image
+        image = resize(image, output_shape=im_size)  # TODO: temp fix
     image = crop_image(image)
     image = add_pad(image, *im_size, zoom) 
     return image
