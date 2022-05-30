@@ -1,0 +1,7 @@
+Expert Systems Feedback
+Problem,Recommendation
+"363 ops were eligible to use tensor cores but none are using FP16","Try enabling AMP (Automatic Mixed Precision). For more information: https://developer.nvidia.com/automatic-mixed-precision"
+"The following GPU device IDs are not being used: 0 2 3","Make sure to pass the necessary options to docker, the framework, and the model to use all available GPUs"
+"21.7% of the aggregated run was spent in the dataloader while not simultaneously running on the GPU","Focus on reducing time spent in the training data input process. This could be time spent in file reading, preprocessing and augmentation or file transfer.
+Consider using NVIDIA DALI, a library that is a high performance alternative to built-in data loaders and data iterators. Learn more here: https://developer.nvidia.com/DALI"
+"Unable to split profile into training iterations: key op  not found","Specify key op by setting the --key_op argument"

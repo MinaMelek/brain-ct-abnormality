@@ -1,0 +1,22 @@
+{
+    "p_189_series": {
+        "assets": {
+            "Hemorrhage": {
+                "Hemorrhage_exists": 0.46026,
+                "Epidural": 0.00603,
+                "Intraparenchymal": 0.06166,
+                "Intraventricular": 0.0205,
+                "Subarachnoid": 0.01068,
+                "Subdural": 0.7141
+            },
+            "Abnormal": {
+                "Fracture": 0.86888,
+                "CalvarialFracture": 0.79908,
+                "OtherFracture": 0.78092,
+                "MassEffect": 0.53187,
+                "MidlineShift": 0.20763
+            },
+            "Tumor": 0.836
+        }
+    }
+}

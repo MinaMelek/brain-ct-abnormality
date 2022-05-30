@@ -2,15 +2,21 @@
     "p_333_series": {
         "assets": {
             "Hemorrhage": {
-                "Intraventricular": 0.02771,
-                "Intraparenchymal": 0.205,
-                "Subarachnoid": 0.01472,
-                "Epidural": 0.02946,
-                "Subdural": 0.37833,
-                "No_Hemorrhage": 0.99392,
-                "Fracture": 0.2639
+                "Hemorrhage_exists": 0.67,
+                "Epidural": 0.01246,
+                "Intraparenchymal": 0.07635,
+                "Intraventricular": 0.01841,
+                "Subarachnoid": 0.0063,
+                "Subdural": 0.90117
             },
-            "Tumor": 0.98053
+            "Abnormal": {
+                "Fracture": 0.2563,
+                "CalvarialFracture": 0.28967,
+                "OtherFracture": 0.26358,
+                "MassEffect": 0.4355,
+                "MidlineShift": 0.60114
+            },
+            "Tumor": 0.91755
         }
     }
 }
