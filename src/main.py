@@ -140,9 +140,13 @@ def main():
         i += 1
 
     study = {}
+    # maximize results with their respective accuracies  # TODO revise
+    valid_accs = [0.9779, 0.9701, 0.9857, 0.9941, 0.9704, 0.9671,  # Hem
+                  0.91560, 0.95010, 0.93870, 0.84580, 0.90370,  # Frac
+                  0.99]  # Tumor
     sep = eval_hem.class_num
-    for key, val in result.items():
-        study_out = np.array(val).mean(0).round(5)
+    for key, value in result.items():
+        study_out = (np.array(value).mean(0) * valid_accs).round(5)
         study[key] = {'Hemorrhage': dict(zip(eval_hem.classes, study_out[:sep])),
                       'Abnormal': dict(zip(eval_abn.classes, study_out[sep:-1])),
                       'Tumor': study_out[-1]}
