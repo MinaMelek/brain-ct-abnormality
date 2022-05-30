@@ -120,7 +120,7 @@ def main(im=None, image_path='', model_path=None, mode=None, gpu=True, parallel=
     if log:
         for i, conf in enumerate(confs):
             try:
-                f = next(files)
+                f = files[i]
                 print(f.name, end=' - ')
             except TypeError:
                 pass
