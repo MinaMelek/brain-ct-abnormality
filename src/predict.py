@@ -29,15 +29,15 @@ class densenet121_multi(nn.Module):
         self.seed = torch.manual_seed(seed)
         self.densenet121 = densenet121(pretrained=pretrained).features
         self.relu = nn.ReLU()
-        self.avg_pool = nn.AdaptiveAvgPool2d(1)
-        self.output = nn.Linear(1024, class_num if class_num > 2 else 1)
+        self.avgpool = nn.AdaptiveAvgPool2d(1)
+        self.mlp = nn.Linear(1024, class_num if class_num > 2 else 1)
 
     def forward(self, x):
         x = self.densenet121(x)
         x = self.relu(x)
-        x = self.avg_pool(x)
+        x = self.avgpool(x)
         x = x.view(-1, 1024)
-        x = self.output(x)
+        x = self.mlp(x)
 
         return x
 
