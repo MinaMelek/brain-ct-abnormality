@@ -185,4 +185,5 @@ if __name__ == '__main__':
     series_dict, output = main()
     with open(args.output_file, "w") as outfile:
         json.dump(output, outfile, indent=4)
+    print("Output is written to file successfully!")
     sys.stdout = default_stdout

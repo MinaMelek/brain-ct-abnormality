@@ -70,21 +70,17 @@ def load_model(model_path, gpu=True, parallel=False, gpu_index=None):
     return model
 
 
-def predict(input_batch: torch.float, model, gpu=True, log=True):
+def predict(input_batch: torch.float, model, gpu=True):
     # prediction process
     if gpu:
         input_batch = input_batch.cuda()
     prediction = model(torch.autograd.Variable(input_batch.float())).view(-1)
     confs = prediction.detach().cpu().numpy() if gpu else prediction.detach().numpy()
-    if log:
-        for i, conf in enumerate(confs):
-            print(f"slice_{i}: " + "{} with confidence {:.2f}%"
-                  .format(*('Tumor', conf * 100) if conf > 0.5 else ('Normal', (1 - conf) * 100)))
 
     return confs
 
 
-def main(im=None, image_path='', model_path=None, mode=None, gpu=True, parallel=False, gpu_index=None):
+def main(im=None, image_path='', model_path=None, mode=None, gpu=True, parallel=False, gpu_index=None, log=True):
     """
     Apply tumor model
 
@@ -100,9 +96,11 @@ def main(im=None, image_path='', model_path=None, mode=None, gpu=True, parallel=
     :return: a numerical value representing the prediction confidence interval.
     """
     # Read image
+    files = None
     if mode == 'batch':
         assert os.path.isdir(image_path) or len(im.shape) == 4, "selecting batch-mode, yet a single file is passed."
-        im = load_batch(list(Path(image_path).glob('*'))) if im is None else im
+        files = [f for f in sorted(Path(image_path).glob('*')) if f.suffix in ['.png', '.dcm']]
+        im = load_batch(files) if im is None else im
         im = torch.from_numpy(im)  # Convert to tensor
     elif mode == 'single':
         assert os.path.isfile(image_path) or len(im.shape) == 3, "please, assign argument --mode batch"
@@ -119,6 +117,15 @@ def main(im=None, image_path='', model_path=None, mode=None, gpu=True, parallel=
 
     # Predict
     confs = predict(im, model, gpu)
+    if log:
+        for i, conf in enumerate(confs):
+            try:
+                f = next(files)
+                print(f.name, end=' - ')
+            except TypeError:
+                pass
+            print(f"slice_{i}: " + "{} with confidence {:.2f}%"
+                  .format(*('Tumor', conf * 100) if conf > 0.5 else ('Normal', (1 - conf) * 100)))
     return confs
 
 
