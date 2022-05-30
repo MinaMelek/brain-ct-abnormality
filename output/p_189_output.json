@@ -2,21 +2,21 @@
     "p_189_series": {
         "assets": {
             "Hemorrhage": {
-                "Hemorrhage_exists": 0.46026,
-                "Epidural": 0.00603,
-                "Intraparenchymal": 0.06166,
-                "Intraventricular": 0.0205,
-                "Subarachnoid": 0.01068,
-                "Subdural": 0.7141
+                "Hemorrhage_exists": 0.44945,
+                "Epidural": 0.00585,
+                "Intraparenchymal": 0.06074,
+                "Intraventricular": 0.02038,
+                "Subarachnoid": 0.01037,
+                "Subdural": 0.69051
             },
             "Abnormal": {
-                "Fracture": 0.86888,
-                "CalvarialFracture": 0.79908,
-                "OtherFracture": 0.78092,
-                "MassEffect": 0.53187,
-                "MidlineShift": 0.20763
+                "Fracture": 0.79558,
+                "CalvarialFracture": 0.75929,
+                "OtherFracture": 0.73319,
+                "MassEffect": 0.44964,
+                "MidlineShift": 0.18751
             },
-            "Tumor": 0.836
+            "Tumor": 0.82797
         }
     }
 }
