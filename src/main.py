@@ -93,7 +93,6 @@ def main():
             continue
         # Determine patient-id/name, study-id and series-id.
         dir_path = Path(dir_path)
-        # TODO: Decide how to use these ids
         study_id, series_id = dir_path.parts[-2:]
         print(f"{dir_path}: Study: {study_id}, Series: {series_id}")
         if study_id not in result.keys():
@@ -102,7 +101,6 @@ def main():
         n_files = len(filenames)
         ignored_portion = n_files // 5
         target_files = filenames[ignored_portion: -ignored_portion]
-        # TODO: redesign for efficiency
         new_size = (args.image_size, args.image_size)
 
         # PREDICTION
@@ -122,6 +120,7 @@ def main():
             predict_2[idx: idx + len(images)] = p_2
             predict_3[idx: idx + len(images)] = p_3
         series[i] = [dir_path, predict_1, predict_2, predict_3]
+        # TODO: research format at production
         # format stroke prediction
         out_1 = predict_1.max(0)
         # format fracture prediction
@@ -129,15 +128,13 @@ def main():
         # format tumor prediction
         from collections import defaultdict
         oc, h = defaultdict(lambda x=0: x), 0
-        for itm in predict_2:
+        for itm in predict_3:
             if itm > 0.5:
                 oc[h] += 1
             else:
                 h += 1
         max_occ = max(oc.values())  # max number of consecutive slices predicted as tumor
-        # out_2 = {'Tumor': f"{predict_2.max() * 100:.2f}%" if max_occ > 2 else
-        #                   f"{predict_2.mean() * 100:.2f}%"}
-        out_3 = predict_2[predict_2 > 0.5].mean() if max_occ > 2 else predict_2[predict_2 <= 0.5].mean()
+        out_3 = predict_3[predict_3 > 0.5].mean() if max_occ > 2 else predict_3[predict_3 <= 0.5].mean()
         result[study_id].append([*out_1, *out_2, out_3])
 
         i += 1
