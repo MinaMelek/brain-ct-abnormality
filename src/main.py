@@ -4,8 +4,7 @@ from pathlib import Path
 import numpy as np
 from torch.utils.data import Dataset, DataLoader
 from preprocessing import slice_preprocess, download_data, standardize
-from tumor_predict import load_model, predict as tumor_predict
-from stroke_predict import predict as stroke_predict, stroke_classes
+from predict import model_eval
 import json
 import argparse
 
@@ -71,6 +70,18 @@ class ImageDataset(Dataset):
 def main():
     patient_dir = download_data(args.url)
     patient_id = Path(patient_dir).name
+    # Define evaluation parameters
+    model_dir = Path(args.model_dir)
+    # 1. Hemorrhage model:
+    eval_hem = model_eval('hemorrhage', args.gpu, args.parallel, args.gpu_index)
+    eval_hem.load_model(model_dir / 'Hemorrhage.pt')
+    # 2. Abnormal model:
+    eval_abn = model_eval('abnormal', args.gpu, args.parallel, args.gpu_index)
+    eval_abn.load_model(model_dir / 'Abnormal.pt')
+    # 3. Tumor model:
+    eval_tmr = model_eval('tumor', args.gpu, args.parallel, args.gpu_index)
+    eval_tmr.load_model(model_dir / 'Tumor.pt')
+
     i = 0
     series = {}
     result = {}
@@ -98,24 +109,24 @@ def main():
         batch_size = 64
         test_data = ImageDataset(target_files, dir_path, new_size, transform=standardize)
         test_dataloader = DataLoader(test_data, batch_size=batch_size, shuffle=False, pin_memory=True, num_workers=24)
-        # preload to remove overhead
-        tumor_model = load_model(os.path.join(args.model_dir, 'JUH_noisy_model.pt'),
-                                 gpu=args.gpu, parallel=args.parallel, gpu_index=args.gpu_index)
-        predict_1 = np.zeros(shape=(len(test_data), len(stroke_classes)))
-        predict_2 = np.zeros(shape=(len(test_data),))
+
+        predict_1 = np.zeros(shape=(len(test_data), eval_hem.class_num))
+        predict_2 = np.zeros(shape=(len(test_data), eval_abn.class_num))
+        predict_3 = np.zeros(shape=(len(test_data),))
         for j, images in enumerate(test_dataloader):
-            p_1 = stroke_predict(images, model_path=os.path.join(args.model_dir, 'CTish_frac_model.pt'),
-                                 gpu=args.gpu, parallel=args.parallel, gpu_index=args.gpu_index)
-            p_2 = tumor_predict(images, tumor_model, gpu=args.gpu)  # TODO: remake for stroke, use args for inputs
+            p_1 = eval_hem.predict(images)
+            p_2 = eval_abn.predict(images)
+            p_3 = eval_tmr.predict(images)
             idx = j*batch_size
-            predict_1[idx: idx+len(images)] = p_1
-            predict_2[idx: idx+len(images)] = p_2
-        series[i] = [dir_path, predict_1, predict_2]
+            predict_1[idx: idx + len(images)] = p_1
+            predict_2[idx: idx + len(images)] = p_2
+            predict_3[idx: idx + len(images)] = p_3
+        series[i] = [dir_path, predict_1, predict_2, predict_3]
         # format stroke prediction
-        # out_1 = dict(zip(stroke_classes, map(lambda x: f"{x * 100:.2f}%", predict_1.max(0))))  # Todo: Change mean
         out_1 = predict_1.max(0)
+        # format fracture prediction
+        out_2 = predict_2.max(0)
         # format tumor prediction
-        # tumor_mean = (predict_2 > 0.5).mean()  # percentage of tumor slices
         from collections import defaultdict
         oc, h = defaultdict(lambda x=0: x), 0
         for itm in predict_2:
@@ -126,15 +137,17 @@ def main():
         max_occ = max(oc.values())  # max number of consecutive slices predicted as tumor
         # out_2 = {'Tumor': f"{predict_2.max() * 100:.2f}%" if max_occ > 2 else
         #                   f"{predict_2.mean() * 100:.2f}%"}
-        out_2 = predict_2[predict_2 > 0.5].mean() if max_occ > 2 else predict_2[predict_2 <= 0.5].mean()
-        result[study_id].append([*out_1, out_2])
+        out_3 = predict_2[predict_2 > 0.5].mean() if max_occ > 2 else predict_2[predict_2 <= 0.5].mean()
+        result[study_id].append([*out_1, *out_2, out_3])
 
         i += 1
 
     study = {}
+    sep = eval_hem.class_num
     for key, val in result.items():
         study_out = np.array(val).mean(0).round(5)
-        study[key] = {'Hemorrhage': dict(zip(stroke_classes, study_out[:-1])),
+        study[key] = {'Hemorrhage': dict(zip(eval_hem.classes, study_out[:sep])),
+                      'Abnormal': dict(zip(eval_abn.classes, study_out[sep:-1])),
                       'Tumor': study_out[-1]}
 
     return series, {patient_id: study}
