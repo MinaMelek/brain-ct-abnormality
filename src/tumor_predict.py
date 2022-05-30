@@ -102,7 +102,7 @@ def main(im=None, image_path='', model_path=None, mode=None, gpu=True, parallel=
     # Read image
     if mode == 'batch':
         assert os.path.isdir(image_path) or len(im.shape) == 4, "selecting batch-mode, yet a single file is passed."
-        im = load_batch(list(Path(image_path).glob('*.png'))) if im is None else im
+        im = load_batch(list(Path(image_path).glob('*'))) if im is None else im
         im = torch.from_numpy(im)  # Convert to tensor
     elif mode == 'single':
         assert os.path.isfile(image_path) or len(im.shape) == 3, "please, assign argument --mode batch"
@@ -118,7 +118,7 @@ def main(im=None, image_path='', model_path=None, mode=None, gpu=True, parallel=
     model = load_model(model_path, gpu, parallel, gpu_index)
 
     # Predict
-    confs = predict(im, model)
+    confs = predict(im, model, gpu)
     return confs
 
 
@@ -149,7 +149,7 @@ if __name__ == "__main__":
         nvidia_dlprof_pytorch_nvtx.init()
         torch.backends.cudnn.benchmark = True
 
-    _ = predict(image_path=args.image_path, model_path=args.model_path,
-                mode=args.mode, gpu=args.gpu, parallel=args.parallel, gpu_index=args.gpu_index)
+    _ = main(image_path=args.image_path, model_path=args.model_path,
+             mode=args.mode, gpu=args.gpu, parallel=args.parallel, gpu_index=args.gpu_index)
 
 

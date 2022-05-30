@@ -166,7 +166,13 @@ def load_batch(im_files):
     """
     im_list = []
     for im_file in im_files:
-        im = sk_imread(str(im_file))[:, :, :3]  # read RGB image
+        if im_file.suffix == '.dcm':
+            im_ = slice_preprocess(str(im_file), (256, 256))
+            im = np.concatenate([im_[:, :, np.newaxis], im_[:, :, np.newaxis], im_[:, :, np.newaxis]], 2)
+        elif im_file.suffix == '.png':
+            im = sk_imread(str(im_file))[:, :, :3]  # read RGB image
+        else:
+            continue
         # Get image into shape
         im_norm = standardize(im)
         im_list.append(im_norm)
