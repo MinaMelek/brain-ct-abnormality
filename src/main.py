@@ -161,8 +161,8 @@ if __name__ == '__main__':
                         help='gpu index if you have multiple gpus, default: None')
     parser.add_argument('-parallel', dest='parallel', default=False, action='store_true',
                         help='use model in parallel mode in case of multiple devices, default: False')
-    parser.add_argument('-m-dir', dest='model_dir', type=str, default=os.path.join('..', 'models'),
-                        help='select pytorch models directory, default: "../models/"')
+    parser.add_argument('-m-dir', dest='model_dir', type=str, default=os.path.join('..', 'models', 'final'),
+                        help='select pytorch models directory, default: "../models/final/"')
     parser.add_argument('-o', dest='output_file', type=str, default=os.path.join('..', 'output', 'output.json'),
                         help='path for output json file, default: "../output/output.json"')
     parser.add_argument('-url', dest='url', type=str, required=True,
