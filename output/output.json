@@ -1,6 +1,6 @@
 {
-    "p_333_series": {
-        "assets": {
+    "p_333": {
+        "study_0": {
             "Hemorrhage": {
                 "Hemorrhage_exists": 0.67,
                 "Epidural": 0.01246,
