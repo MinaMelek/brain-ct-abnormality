@@ -1,2 +1,2 @@
-# brain-ct-pipeline
-The deployment pipeline for Brain CT scan analysis and prediction 
+# brain-ct-abnormality
+A Brain CT scan analysis and prediction for variuos abnormalities.
